@@ -417,11 +417,12 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, update = Tr
     
 
         attr_dict = {}
-        for a in edge_type['attributes']:
-            v = a['raw']
-            if v[-1] != '/':
-                v += '/'
-            attr_dict[a['name']] = v
+        if 'attributes' in edge_type:
+            for a in edge_type['attributes']:
+                v = a['raw']
+                if v[-1] != '/':
+                    v += '/'
+                attr_dict[a['name']] = v
             
         attr = dict()
         count = 0
