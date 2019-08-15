@@ -257,11 +257,12 @@ def create_graph_nodes_from_json(graph, graph_mapper, data_provider, update = Tr
         key_raw_name = node_key['raw']
 
         attr_dict = {}
-        for a in node_type['attributes']:
-            raw_attr = a['raw']
-            if raw_attr[-1] != '/':
-                raw_attr += '/'
-            attr_dict[a['name']] = raw_attr
+        if 'attributes' in node_type:
+            for a in node_type['attributes']:
+                raw_attr = a['raw']
+                if raw_attr[-1] != '/':
+                    raw_attr += '/'
+                attr_dict[a['name']] = raw_attr
         
         attr = dict()
         count = 0
@@ -281,8 +282,8 @@ def create_graph_nodes_from_json(graph, graph_mapper, data_provider, update = Tr
         # make sure we have the key_raw_name in the list of attributes
         if key_raw_name[-1] != '/':
             key_raw_name += '/'
-        if key_raw_name not in lookup_attr_list:
-            lookup_attr_list.append(key_raw_name_path)
+        if lookup_attr_list != [] and key_raw_name not in lookup_attr_list:
+            lookup_attr_list.append(key_raw_name)
 #         print('lookup_attr_list:', lookup_attr_list)
         
         # iterate and collect.  
