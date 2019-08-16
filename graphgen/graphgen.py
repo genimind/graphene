@@ -177,6 +177,8 @@ def create_graph_from_json(graph, graph_mapper, data_provider, update = True):
         graph = create_graph_nodes_from_json(graph, graph_mapper, data_provider, update)
     if 'edges' in graph_mapper.keys():
         graph = create_graph_edges_from_json(graph, graph_mapper, data_provider, update)
+    if 'cliques' in graph_mapper.keys():
+        graph = create_graph_clique_from_json(graph, graph_mapper, data_provider, update)
             
     return graph
 
@@ -472,4 +474,88 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, update = Tr
     return graph
             
             
+def create_graph_clique_from_json(graph, graph_mapper, data_provider, update = True):
+    '''
+    
+    params:
+        graph: fully constructed graph object to add new nodes and edges to it.
+        graph_mapper: dictionary describing the type of object to extract
+        data_provider: json_data
+        
+    return:
+        constructured "graph_type" graph object based on the provided source data and according to 
+        the mapper schema description.
+    '''
+
+    assert (graph != None),"Graph object wasn't constructed correctly"
+    # TBD... assert (isinstance(data_provider, pd.DataFrame)),"The data provider should be a pandas DataFrame"
+    
+    # get list of edge types and edge types
+    cliques = []
+
+    if 'cliques' in graph_mapper.keys():
+        cliques = graph_mapper['cliques']
+
+    raw_data = data_provider
+    
+#     print(cliques)
+    for clique in cliques:
+        
+        # TBD... assert check_attributes(edge_type, raw_data, edge_type['attributes'])
+
+        # TBD: Need to support multiple keys. For now we'll only have a single key for each record 
+        clique_type_name = clique['type']
+
+        # clique nodes metadata
+        node_clique = clique['nodes']
+        node_list = []
+        for node_type in node_clique:
+            node_meta = {}
+            node_meta['node_name'] = node_type['name']
+            node_meta['node_path'] = node_type['path']
+            node_meta['key_path'] = node_type['key'][0]['path'] # TBD: we only support single key
+            if node_meta['node_path'][-1] != '/':
+                node_meta['node_path'] += '/'
+            if node_meta['key_path'][-1] != '/':
+                node_meta['key_path'] += '/'
+            node_list.append(node_meta)
+        count = 0
+ 
+        lookup_attr_list = []
+        for node_meta in node_list:
+            # make sure we have the key path in the list of attributes
+            if node_meta['key_path'] not in lookup_attr_list:
+                lookup_attr_list.append(node_meta['key_path'])
             
+        print('lookup_attr_list:', lookup_attr_list)
+
+        
+        # iterate and collect.  
+        for j in raw_data:
+#             print('json>> ', j)
+            jelem = extract_edge_attrs_from_json(j, node_list, lookup_attr_list)
+            if len(jelem) > 0:
+                for e in jelem:
+                    for src_node in node_list:
+                        for dst_node in node_list:
+                            src_key_path = src_node['key_path']
+                            dst_key_path = dst_node['key_path']
+#                           print('{} - src: {} - dest: {} '.format(count, src_type_name, dst_type_name, e))
+                            src_key_value = e[src_key_path] if src_key_path in e else None
+                            dst_key_value = e[dst_key_path] if dst_key_path in e else None
+        
+                            attr['_type_'] = clique_type_name
+                            # for k,v in attr_dict.items():
+                            #     attr[k] = e[v] if v in e else ''
+                            if src_key_value and dst_key_value:
+                                from_id = '{}_{}'.format(src_node['node_name'], src_key_value)
+                                to_id = '{}_{}'.format(dst_node['node_name'], dst_key_value)
+#                               print('adding edge from: {} -> to: {}, attr: {}'.format(from_id, to_id, attr))
+                                graph.add_edge(from_id, to_id)
+                    
+                            count += 1
+        
+                            print('clique: {} -> {} - {}'.format(src_node['node_name'], dst_node['node_name'], count))
+       
+    return graph
+             
