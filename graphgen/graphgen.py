@@ -571,7 +571,7 @@ def create_graph_clique_from_json(graph, graph_mapper, data_provider, update=Tru
                     v += '/'
                 lookup_attr_list.append(v)
 
-           if node_meta['key_path'] not in lookup_attr_list:
+            if node_meta['key_path'] not in lookup_attr_list:
                 lookup_attr_list.append(node_meta['key_path'])
 
             node_meta['lookup_attr_list'] = lookup_attr_list            
@@ -590,25 +590,31 @@ def create_graph_clique_from_json(graph, graph_mapper, data_provider, update=Tru
                 node['extracted_elem'] = jelem
 
             # construct the clique
-            for node in node_list:
-                if len(jelem) > 0:
-                    extracted_elems += jelem
-                for e in jelem:
-                    # print('{} - type_found: {} - attr: {}'.format(count, node_type_name, e))
-                    key_value = e[key_raw_name] if key_raw_name in e else 'UNKNOWN_'+str(count)
-                    node_id = '{}_{}'.format(node_type_name, key_value)
-                    if not update and graph.has_node(node_id):
-#                         print('graph has node', node_id)
+            for src_node in node_list:
+                for dst_node in node_list:
+                    if src_node == dst_node: # we don't allow same type to link (TBD: we need to reconsider this!)
                         continue
+                    for src_elem in src_node['extracted_elem']:
+                        # print('{} - type_found: {} - attr: {}'.format(count, node_type_name, e))
+                        key_raw_name = src_node['key_path']
+                        src_key_value = src_elem[key_raw_name] if key_raw_name in src_elem else None
+                        src_node_id = '{}_{}'.format(src_node['node_type'], src_key_value)
 
-                    attr['_type_'] = node_type_name
-                    for k,v in attr_dict.items():
-                        attr[k] = e[v] if v in e else ''
-#                     print('>> adding node: ', node_id)
-                    graph.add_node(node_id, **attr)
-                    count += 1
+                        for dst_elem in dst_node['extracted_elem']:
+                            key_raw_name = dst_node['key_path']
+                            dst_key_value = dst_elem[key_raw_name] if key_raw_name in dst_elem else None
+
+                            attr['_type_'] = clique_type_name
+                            # for k,v in attr_dict.items():
+                            #     attr[k] = e[v] if v in e else ''
+                            if src_key_value and dst_key_value:
+                                dst_node_id = '{}_{}'.format(dst_node['node_type'], dst_key_value)
+                                print('adding edge from: {} -> to: {}, attr: {}'.format(src_node_id, dst_node_id, attr))
+                                graph.add_edge(src_node_id, dst_node_id, **attr)
+
+                            count += 1
         
-        # print('type: {} - {}'.format(node_type_path, count))
+                            # print('type: {} - {}'.format(node_type_path, count))
         
     return graph
 
