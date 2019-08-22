@@ -110,7 +110,7 @@ def create_graph_from_pandas(graph, graph_mapper, data_provider, update = True):
         # count = 0
         node_type_name = node_type['type']
         for row in raw_data.itertuples(index = False):
-            node_id = '{}_{}'.format(node_type_name, row[id_raw_name])
+            node_id = (node_type_name, row[id_raw_name])
             if not update and graph.has_node(node_id):
                 continue
 
@@ -144,8 +144,8 @@ def create_graph_from_pandas(graph, graph_mapper, data_provider, update = True):
             attr['_type_'] = edge_type['type']
             for k,v in attr_dict.items():
                 attr[k] = row[v]
-            from_id = '{}_{}'.format(src_type_name, row[src_index])
-            to_id   = '{}_{}'.format(dst_type_name, row[dst_index])
+            from_id = (src_type_name, row[src_index])
+            to_id   = (dst_type_name, row[dst_index])
             graph.add_edge(from_id, to_id, **attr)
         
         
@@ -294,7 +294,7 @@ def create_graph_nodes_from_json(graph, graph_mapper, data_provider, update = Tr
                 for e in jelem:
                     # print('{} - type_found: {} - attr: {}'.format(count, node_type_name, e))
                     key_value = e[key_raw_name] if key_raw_name in e else 'UNKNOWN_'+str(count)
-                    node_id = '{}_{}'.format(node_type_name, key_value)
+                    node_id = (node_type_name, key_value)
                     if not update and graph.has_node(node_id):
 #                         print('graph has node', node_id)
                         continue
@@ -360,7 +360,7 @@ def extract_edge_attrs_from_json(jdata, src_type_path, dst_type_path, attr_list)
     return out
                 
             
-def create_graph_edges_from_json(graph, graph_mapper, data_provider, update = True):
+def create_graph_edges_from_json(graph, graph_mapper, data_provider, update = True, verbose = False):
     '''
     
     params:
@@ -460,14 +460,14 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, update = Tr
                     attr['_type_'] = edge_type_name
                     for k,v in attr_dict.items():
                         attr[k] = e[v] if v in e else ''
-                    from_id = '{}_{}'.format(src_type_name, src_key_value)
-                    to_id = '{}_{}'.format(dst_type_name, dst_key_value)
+                    from_id = (src_type_name, src_key_value)
+                    to_id = (dst_type_name, dst_key_value)
 #                     print('adding edge from: {} -> to: {}, attr: {}'.format(from_id, to_id, attr))
                     graph.add_edge(from_id, to_id, **attr)
                     
                     count += 1
-        
-        print('type: {} -> {} - {}'.format(src_type_path, dst_type_path, count))
+        if verbose:
+            print('type: {} -> {} - {}'.format(src_type_path, dst_type_path, count))
        
     return graph
             
@@ -479,7 +479,7 @@ def extract_clique_attrs_from_json(jdata, node_list, attr_list):
         multiple group of cliques within the same group. We might need to revist
         this later (TBD)
     '''
-    print('>>> looking for attrs:', attr_list)
+#     print('>>> looking for attrs:', attr_list)
     out = []
 
     def extract_data(jdata, cur_path = '/', cur_obj = None):
@@ -493,16 +493,16 @@ def extract_clique_attrs_from_json(jdata, node_list, attr_list):
             for a in jdata:
                 extract_data(a, cur_path, cur_obj)
         else:
-            print('cur_path: {} '.format(cur_path))
+#             print('cur_path: {} '.format(cur_path))
             if cur_obj != None and cur_path in attr_list:
-                print('<<< MATCHED_ATTR >>>', cur_path)
+#                 print('<<< MATCHED_ATTR >>>', cur_path)
                 cur_obj[cur_path] = jdata
 
     extract_data(jdata, cur_obj={})
     return out
  
 
-def create_graph_clique_from_json(graph, graph_mapper, data_provider, update=True):
+def create_graph_clique_from_json(graph, graph_mapper, data_provider, update=True, verbose=False):
 
     '''
     params:
@@ -598,7 +598,7 @@ def create_graph_clique_from_json(graph, graph_mapper, data_provider, update=Tru
                         # print('{} - type_found: {} - attr: {}'.format(count, node_type_name, e))
                         key_raw_name = src_node['key_path']
                         src_key_value = src_elem[key_raw_name] if key_raw_name in src_elem else None
-                        src_node_id = '{}_{}'.format(src_node['node_type'], src_key_value)
+                        src_node_id = (src_node['node_type'], src_key_value)
 
                         for dst_elem in dst_node['extracted_elem']:
                             key_raw_name = dst_node['key_path']
@@ -608,105 +608,17 @@ def create_graph_clique_from_json(graph, graph_mapper, data_provider, update=Tru
                             # for k,v in attr_dict.items():
                             #     attr[k] = e[v] if v in e else ''
                             if src_key_value and dst_key_value:
-                                dst_node_id = '{}_{}'.format(dst_node['node_type'], dst_key_value)
-                                print('adding edge from: {} -> to: {}, attr: {}'.format(src_node_id, dst_node_id, attr))
+                                dst_node_id = (dst_node['node_type'], dst_key_value)
+#                                 print('adding edge from: {} -> to: {}, attr: {}'.format(src_node_id, dst_node_id, attr))
                                 graph.add_edge(src_node_id, dst_node_id, **attr)
 
                             count += 1
         
                             # print('type: {} - {}'.format(node_type_path, count))
+            if verbose:
+                print('num cliques creates: {}'.format(count))
+
         
     return graph
 
-
-def create_graph_clique_from_json___olde(graph, graph_mapper, data_provider, update = True):
-    '''
-    
-    params:
-        graph: fully constructed graph object to add new nodes and edges to it.
-        graph_mapper: dictionary describing the type of object to extract
-        data_provider: json_data
-        
-    return:
-        constructured "graph_type" graph object based on the provided source data and according to 
-        the mapper schema description.
-    '''
-
-    assert (graph != None),"Graph object wasn't constructed correctly"
-    # TBD... assert (isinstance(data_provider, pd.DataFrame)),"The data provider should be a pandas DataFrame"
-    
-    # get list of edge types and edge types
-    cliques = []
-
-    if 'cliques' in graph_mapper.keys():
-        cliques = graph_mapper['cliques']
-
-    raw_data = data_provider
-    
-#     print(cliques)
-    for clique in cliques:
-        
-        # TBD... assert check_attributes(edge_type, raw_data, edge_type['attributes'])
-
-        # TBD: Need to support multiple keys. For now we'll only have a single key for each record 
-        clique_type_name = clique['type']
-
-        # clique nodes metadata
-        node_clique = clique['nodes']
-        node_list = []
-        for node_type in node_clique:
-            node_meta = {}
-            node_meta['node_type'] = node_type['type']
-            node_meta['node_path'] = node_type['path']
-            node_meta['key_path'] = node_type['key'][0]['raw'] # TBD: we only support single key
-            if node_meta['node_path'][-1] != '/':
-                node_meta['node_path'] += '/'
-            if node_meta['key_path'][-1] != '/':
-                node_meta['key_path'] += '/'
-            node_list.append(node_meta)
-        count = 0
- 
-        lookup_attr_list = []
-        for node_meta in node_list:
-            # make sure we have the key path in the list of attributes
-            if node_meta['key_path'] not in lookup_attr_list:
-                lookup_attr_list.append(node_meta['key_path'])
-            
-        print('lookup_attr_list:', lookup_attr_list)
-
-        attr = dict()
-        
-        # iterate and collect.  
-        for j in raw_data:
-#             print('json>> ', j)
-            jelem = extract_clique_attrs_from_json(j, node_list, lookup_attr_list)
-            if len(jelem) > 0:
-                print('jelem', jelem)
-                for e in jelem:
-                    print('what we got from the extraction:', e)
-                    print('num of node_list', len(node_list))
-                    for src_node in node_list:
-                        for dst_node in node_list:
-                            if src_node == dst_node: # no self loop
-                                continue
-                            src_key_path = src_node['key_path']
-                            dst_key_path = dst_node['key_path']
-#                           print('{} - src: {} - dest: {} '.format(count, src_type_name, dst_type_name, e))
-                            src_key_value = e[src_key_path] if src_key_path in e else None
-                            dst_key_value = e[dst_key_path] if dst_key_path in e else None
-        
-                            attr['_type_'] = clique_type_name
-                            # for k,v in attr_dict.items():
-                            #     attr[k] = e[v] if v in e else ''
-                            if src_key_value and dst_key_value:
-                                from_id = '{}_{}'.format(src_node['node_type'], src_key_value)
-                                to_id = '{}_{}'.format(dst_node['node_type'], dst_key_value)
-                                print('adding edge from: {} -> to: {}, attr: {}'.format(from_id, to_id, attr))
-                                graph.add_edge(from_id, to_id)
-                    
-                            count += 1
-        
-                            print('clique: {} -> {} - {}'.format(src_node['node_type'], dst_node['node_type'], count))
-       
-    return graph
-             
+   
