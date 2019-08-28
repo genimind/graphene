@@ -293,7 +293,7 @@ def create_graph_nodes_from_json(graph, graph_mapper, data_provider, update = Tr
             if len(jelem) > 0:
                 for e in jelem:
                     # print('{} - type_found: {} - attr: {}'.format(count, node_type_name, e))
-                    key_value = e[key_raw_name] if key_raw_name in e else 'UNKNOWN_'+str(count)
+                    key_value = e[key_raw_name] if key_raw_name in e else '_UNKNOWN_'
                     node_id = (node_type_name, key_value)
                     if not update and graph.has_node(node_id):
 #                         print('graph has node', node_id)
@@ -302,7 +302,7 @@ def create_graph_nodes_from_json(graph, graph_mapper, data_provider, update = Tr
                     attr['_type_'] = node_type_name
                     for k,v in attr_dict.items():
                         attr[k] = e[v] if v in e else ''
-#                     print('>> adding node: ', node_id)
+                    # print('>> adding node: ', node_id)
                     graph.add_node(node_id, **attr)
                     count += 1
         
@@ -454,8 +454,8 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, update = Tr
             if len(jelem) > 0:
                 for e in jelem:
 #                     print('{} - src: {} - dest: {} - attr: {}'.format(count, src_type_name, dst_type_name, e))
-                    src_key_value = e[src_key_raw_name] if src_key_raw_name in e else 'UNKNOWN_'+str(count)
-                    dst_key_value = e[dst_key_raw_name] if dst_key_raw_name in e else 'UNKNOWN_'+str(count)
+                    src_key_value = e[src_key_raw_name] if src_key_raw_name in e else '_UNKNOWN_'
+                    dst_key_value = e[dst_key_raw_name] if dst_key_raw_name in e else '_UNKNOWN_'
         
                     attr['_type_'] = edge_type_name
                     for k,v in attr_dict.items():
@@ -473,33 +473,33 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, update = Tr
             
 
 
-def extract_clique_attrs_from_json(jdata, node_list, attr_list):
-    '''
-        For now we'll assume that all attributes are available and there are no
-        multiple group of cliques within the same group. We might need to revist
-        this later (TBD)
-    '''
-#     print('>>> looking for attrs:', attr_list)
-    out = []
+# def extract_clique_attrs_from_json(jdata, node_list, attr_list):
+#     '''
+#         For now we'll assume that all attributes are available and there are no
+#         multiple group of cliques within the same group. We might need to revist
+#         this later (TBD)
+#     '''
+# #     print('>>> looking for attrs:', attr_list)
+#     out = []
 
-    def extract_data(jdata, cur_path = '/', cur_obj = None):
-        if type(jdata) is dict:            
-            for a in jdata:
-                extract_data(jdata[a], cur_path + a + '/', cur_obj)
-                if all(x in attr_list for x in cur_obj.keys()): # we got all attributres
-                    out.append(cur_obj)
-                    cur_obj = {}
-        elif type(jdata) is list:
-            for a in jdata:
-                extract_data(a, cur_path, cur_obj)
-        else:
-#             print('cur_path: {} '.format(cur_path))
-            if cur_obj != None and cur_path in attr_list:
-#                 print('<<< MATCHED_ATTR >>>', cur_path)
-                cur_obj[cur_path] = jdata
+#     def extract_data(jdata, cur_path = '/', cur_obj = None):
+#         if type(jdata) is dict:            
+#             for a in jdata:
+#                 extract_data(jdata[a], cur_path + a + '/', cur_obj)
+#                 if all(x in attr_list for x in cur_obj.keys()): # we got all attributres
+#                     out.append(cur_obj)
+#                     cur_obj = {}
+#         elif type(jdata) is list:
+#             for a in jdata:
+#                 extract_data(a, cur_path, cur_obj)
+#         else:
+# #             print('cur_path: {} '.format(cur_path))
+#             if cur_obj != None and cur_path in attr_list:
+# #                 print('<<< MATCHED_ATTR >>>', cur_path)
+#                 cur_obj[cur_path] = jdata
 
-    extract_data(jdata, cur_obj={})
-    return out
+#     extract_data(jdata, cur_obj={})
+#     return out
  
 
 def create_graph_clique_from_json(graph, graph_mapper, data_provider, update=True, verbose=False):
