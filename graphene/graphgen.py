@@ -110,7 +110,7 @@ def create_graph_from_pandas(graph, graph_mapper, data_provider, update = True):
         # count = 0
         node_type_name = node_type['type']
         for row in raw_data.itertuples(index = False):
-            node_id = (node_type_name, row[id_raw_name])
+            node_id = (node_type_name, str(row[id_raw_name]))
             if not update and graph.has_node(node_id):
                 continue
 
@@ -144,8 +144,8 @@ def create_graph_from_pandas(graph, graph_mapper, data_provider, update = True):
             attr['_type_'] = edge_type['type']
             for k,v in attr_dict.items():
                 attr[k] = row[v]
-            from_id = (src_type_name, row[src_index])
-            to_id   = (dst_type_name, row[dst_index])
+            from_id = (src_type_name, str(row[src_index]))
+            to_id   = (dst_type_name, str(row[dst_index]))
             graph.add_edge(from_id, to_id, **attr)
         
         
@@ -294,7 +294,7 @@ def create_graph_nodes_from_json(graph, graph_mapper, data_provider, update = Tr
                 for e in jelem:
                     # print('{} - type_found: {} - attr: {}'.format(count, node_type_name, e))
                     key_value = e[key_raw_name] if key_raw_name in e else '_UNKNOWN_'
-                    node_id = (node_type_name, key_value)
+                    node_id = (node_type_name, str(key_value))
                     if not update and graph.has_node(node_id):
 #                         print('graph has node', node_id)
                         continue
@@ -460,8 +460,8 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, update = Tr
                     attr['_type_'] = edge_type_name
                     for k,v in attr_dict.items():
                         attr[k] = e[v] if v in e else ''
-                    from_id = (src_type_name, src_key_value)
-                    to_id = (dst_type_name, dst_key_value)
+                    from_id = (src_type_name, str(src_key_value))
+                    to_id = (dst_type_name, str(dst_key_value))
 #                     print('adding edge from: {} -> to: {}, attr: {}'.format(from_id, to_id, attr))
                     graph.add_edge(from_id, to_id, **attr)
                     
@@ -598,7 +598,7 @@ def create_graph_clique_from_json(graph, graph_mapper, data_provider, update=Tru
                         # print('{} - type_found: {} - attr: {}'.format(count, node_type_name, e))
                         key_raw_name = src_node['key_path']
                         src_key_value = src_elem[key_raw_name] if key_raw_name in src_elem else None
-                        src_node_id = (src_node['node_type'], src_key_value)
+                        src_node_id = (src_node['node_type'], str(src_key_value))
 
                         for dst_elem in dst_node['extracted_elem']:
                             key_raw_name = dst_node['key_path']
@@ -608,7 +608,7 @@ def create_graph_clique_from_json(graph, graph_mapper, data_provider, update=Tru
                             # for k,v in attr_dict.items():
                             #     attr[k] = e[v] if v in e else ''
                             if src_key_value and dst_key_value:
-                                dst_node_id = (dst_node['node_type'], dst_key_value)
+                                dst_node_id = (dst_node['node_type'], str(dst_key_value))
 #                                 print('adding edge from: {} -> to: {}, attr: {}'.format(src_node_id, dst_node_id, attr))
                                 graph.add_edge(src_node_id, dst_node_id, **attr)
 
