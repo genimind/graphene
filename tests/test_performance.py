@@ -1,8 +1,17 @@
 import unittest
 import networkx as nx
+import time
+import random
+import string
 from graphene import graphgen
 
-class TestClique(unittest.TestCase):
+def randomString(stringLength = 10):
+    """Generate a random string with the combination of lowercase and uppercase letters """
+    letters = string.ascii_letters
+    return ''.join(random.choice(letters) for i in range(stringLength))
+
+
+class TestPerformance(unittest.TestCase):
 
     def setUp(self):
         self.node_mapper = {
@@ -64,48 +73,45 @@ class TestClique(unittest.TestCase):
                 }
             ]
         }
-        self.data = [
-            {
-                "type_a_attr1" : "type_a_val1",
-                "type_a_attr2" : "type_a_val2",
+
+    @classmethod
+    def setUpClass(cls):
+        cls.num_of_elements = 100000
+        cls.data = []
+        for i in range(cls.num_of_elements):
+            obj = {
+                "type_a_attr1" : "type_a_" + randomString(),
+                "type_a_attr2" : "type_a_" + randomString(),
                 "path1" : {
-                    "type_b_attr" : "type_b_val",
+                    "type_b_attr" : "type_b_" + randomString(),
                     "path2" : {
-                        "type_c_attr" : "type_c_val",
+                        "type_c_attr" : "type_c_" + randomString(),
                         }
                     } 
             }
-        ]
+            cls.data.append(obj)
 
     def test_genNodes(self):
-        g = nx.MultiGraph()
+        g = nx.Graph()
+        start = time.time()
         g = graphgen.create_graph(g, 
                 graph_mapper = self.node_mapper, 
                 data_provider = self.data)
-        self.assertTrue(nx.number_of_nodes(g), 3)
-        # get node with key.
-        key1 = ('TypeA', 'type_a_val2')
-        key2 = ('TypeB', 'type_b_val')
-        self.assertTrue(key1 in g.nodes)
-        print(g.node[key1])
-        print(g.node[key2])
+        end = time.time()
+        duration = end - start
+        print('# edges: {} - duration:{:.2f} sec'.format(g.number_of_nodes(), duration))
+        self.assertTrue(duration < 1)
     
     def test_genClique(self):
-        g = nx.MultiGraph()
+        g = nx.Graph()
+        start = time.time()
         g = graphgen.create_graph(g,
                 graph_mapper = self.clique_mapper,
                 data_provider = self.data)
-        self.assertTrue(nx.number_of_edges(g), 3)
-        # locate an edge
-        key1 = ('TypeA', 'type_a_val2')
-        key2 = ('TypeB', 'type_b_val')
-        self.assertTrue(g.has_node(key1))
-        self.assertTrue(key2 in g)
-        self.assertTrue(g.has_edge(key1, key2))
-        key3 = ('TypeC', 'ABCDEF') # invalid node key
-        self.assertFalse(key3 in g)
-        self.assertFalse(g.has_edge(key1, key3))
-
+        end = time.time()
+        duration = end - start
+        print('# nodes: {} - duration:{:.2f} sec'.format(g.number_of_edges(), duration))
+        self.assertTrue(duration < 1)
 
 # if __name__ == '__main__':
 #     unittest.main()
