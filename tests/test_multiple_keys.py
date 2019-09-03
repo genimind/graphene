@@ -2,7 +2,7 @@ import unittest
 import networkx as nx
 from graphene import graphgen
 
-class TestClique(unittest.TestCase):
+class TestMultipleKeys(unittest.TestCase):
 
     def setUp(self):
         self.node_mapper = {
@@ -24,12 +24,18 @@ class TestClique(unittest.TestCase):
                     'path': '/path1',
                     'type_in_key': True,
                     'key' : [
-                        {'name': 'attr1', 'raw': '/path1/type_b_attr'}
+                        {'name': 'attr2', 'raw': '/path1/type_b_attr2'},
+                        {'name': 'attr1', 'raw': '/path1/type_b_attr1'}
+                        ],
+                    'attributes': [
+                        {'name': 'attr1', 'raw': '/path1/type_b_attr1'},
+                        {'name': 'attr2', 'raw': '/path1/type_b_attr2'}
                         ]
                 },
                 {
                     'type': 'TypeC',
                     'path': '/path1/path2',
+                    'type_in_key': False,
                     'key' : [
                         {'name': 'attr1', 'raw': '/path1/path2/type_c_attr'}
                         ]
@@ -54,12 +60,14 @@ class TestClique(unittest.TestCase):
                             'path': '/path1',
                             'type_in_key': True,
                             'key' : [
-                                {'name': 'attr1', 'raw': '/path1/type_b_attr'}
+                                {'name': 'attr2', 'raw': '/path1/type_b_attr2'},
+                                {'name': 'attr1', 'raw': '/path1/type_b_attr1'}
                                 ]
                         },
                         {
                             'type': 'TypeC',
                             'path': '/path1/path2',
+                            'type_in_key': False,
                             'key' : [
                                 {'name': 'attr1', 'raw': '/path1/path2/type_c_attr'}
                                 ]
@@ -73,7 +81,8 @@ class TestClique(unittest.TestCase):
                 "type_a_attr1" : "type_a_val1",
                 "type_a_attr2" : "type_a_val2",
                 "path1" : {
-                    "type_b_attr" : "type_b_val",
+                    "type_b_attr1" : "type_b_val1",
+                    "type_b_attr2" : "type_b_val2",
                     "path2" : {
                         "type_c_attr" : "type_c_val",
                         }
@@ -89,10 +98,13 @@ class TestClique(unittest.TestCase):
         self.assertTrue(nx.number_of_nodes(g), 3)
         # get node with key.
         key1 = ('TypeA', 'type_a_val2')
-        key2 = ('TypeB', 'type_b_val')
+        key2 = ('TypeB', 'type_b_val2', 'type_b_val1')
         self.assertTrue(key1 in g.nodes)
+        self.assertTrue(key2 in g.nodes)
         print(g.node[key1])
         print(g.node[key2])
+        keyU = ('TypeA', '_UNKNOWN_')
+        self.assertFalse(keyU in g.nodes)
     
     def test_genClique(self):
         g = nx.MultiGraph()
@@ -102,7 +114,7 @@ class TestClique(unittest.TestCase):
         self.assertTrue(nx.number_of_edges(g), 3)
         # locate an edge
         key1 = ('TypeA', 'type_a_val2')
-        key2 = ('TypeB', 'type_b_val')
+        key2 = ('TypeB', 'type_b_val2', 'type_b_val1')
         self.assertTrue(g.has_node(key1))
         self.assertTrue(key2 in g)
         self.assertTrue(g.has_edge(key1, key2))
