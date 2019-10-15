@@ -1,0 +1,35 @@
+{
+"nodes": [
+	{
+		"type": "TypeA",
+	  "path": "/",
+	  "key" : [
+	    {"name": "attr2", "raw": "/a_attr2"}
+  	],
+  	"attributes": [
+  	  {"name": "attr1", "raw": "/a_attr1"},
+  	  {"name": "attr2", "raw": "/a_attr2"}
+    ]
+  },
+  {
+    "type": "TypeB",
+    "path": "/path_b",
+    "key" : [
+      	{"name": "attr2", "raw": "/path_b/b_attr2"},
+      	{"name": "attr1", "raw": "/path_b/b_attr1"}
+    ],
+    "attributes": [
+      {"name": "attr1", "raw": "/path_b/b_attr1"},
+  	  {"name": "attr2", "raw": "/path_b/b_attr2"}
+  	]
+  },
+  {
+  	"type": "TypeC",
+  	"path": "/path_b/path_c",
+  	"key" : [
+    	{"name": "attr1", "raw": "/path_b/path_c/c_attr1"}
+  	]
+  }
+  ]               
+}
+

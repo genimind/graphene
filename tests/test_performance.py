@@ -1,9 +1,14 @@
+import os
 import unittest
 import networkx as nx
 import time
 import random
 import string
+import json
 from graphene import graphgen
+
+node_mapper_filename   = './node_mapper.json'
+clique_mapper_filename = './clique_mapper.json'
 
 def randomString(stringLength = 10):
     """Generate a random string with the combination of lowercase and uppercase letters """
@@ -14,65 +19,12 @@ def randomString(stringLength = 10):
 class TestPerformance(unittest.TestCase):
 
     def setUp(self):
-        self.node_mapper = {
-            'nodes': [
-                {
-                    'type': 'TypeA',
-                    'path': '/',
-                    'key' : [
-                        {'name': 'attr2', 'raw': '/type_a_attr2'}
-                        ],
-                    'attributes': [
-                        {'name': 'attr1', 'raw': '/type_a_attr1'},
-                        {'name': 'attr2', 'raw': '/type_a_attr2'}
-                        ]
-                },
-                {
-                    'type': 'TypeB',
-                    'path': '/path1',
-                    'key' : [
-                        {'name': 'attr1', 'raw': '/path1/type_b_attr'}
-                        ]
-                },
-                {
-                    'type': 'TypeC',
-                    'path': '/path1/path2',
-                    'key' : [
-                        {'name': 'attr1', 'raw': '/path1/path2/type_c_attr'}
-                        ]
-                },
-            ]               
-        }
-        self.clique_mapper = {
-            'cliques': [
-                {
-                    'type': '__default__',
-                    'nodes': [
-                        {
-                            'type': 'TypeA',
-                            'path': '/',
-                            'key' : [
-                                {'name': 'attr2', 'raw': '/type_a_attr2'}
-                                ],
-                        },
-                        {
-                            'type': 'TypeB',
-                            'path': '/path1',
-                            'key' : [
-                                {'name': 'attr1', 'raw': '/path1/type_b_attr'}
-                                ]
-                        },
-                        {
-                            'type': 'TypeC',
-                            'path': '/path1/path2',
-                            'key' : [
-                                {'name': 'attr1', 'raw': '/path1/path2/type_c_attr'}
-                                ]
-                        },
-                    ]   
-                }
-            ]
-        }
+        self.node_mapper = None
+        self.clique_mapper = None
+        with open(node_mapper_filename) as f:
+            self.node_mapper = json.load(f)
+        with open(clique_mapper_filename) as f:
+            self.clique_mapper = json.load(f)
 
     @classmethod
     def setUpClass(cls):
@@ -80,12 +32,12 @@ class TestPerformance(unittest.TestCase):
         cls.data = []
         for i in range(cls.num_of_elements):
             obj = {
-                "type_a_attr1" : "type_a_" + randomString(),
-                "type_a_attr2" : "type_a_" + randomString(),
-                "path1" : {
-                    "type_b_attr" : "type_b_" + randomString(),
-                    "path2" : {
-                        "type_c_attr" : "type_c_" + randomString(),
+                "a_attr1" : "a_" + randomString(),
+                "a_attr2" : "a_" + randomString(),
+                "path_b" : {
+                    "b_attr1" : "b_" + randomString(),
+                    "path_c" : {
+                        "c_attr1" : "c_" + randomString(),
                         }
                     } 
             }
@@ -100,7 +52,7 @@ class TestPerformance(unittest.TestCase):
         end = time.time()
         duration = end - start
         print('# edges: {} - duration:{:.2f} sec'.format(g.number_of_nodes(), duration))
-        self.assertTrue(duration < 1)
+        self.assertTrue(duration < 3)
     
     def test_genClique(self):
         g = nx.Graph()
@@ -111,7 +63,7 @@ class TestPerformance(unittest.TestCase):
         end = time.time()
         duration = end - start
         print('# nodes: {} - duration:{:.2f} sec'.format(g.number_of_edges(), duration))
-        self.assertTrue(duration < 1)
+        self.assertTrue(duration < 4)
 
 # if __name__ == '__main__':
 #     unittest.main()
