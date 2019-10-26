@@ -3,7 +3,7 @@
 #
 
 import pandas as pd
-from .process_utilities import correct_path, construct_key
+from .process_utilities import *
 from .process_json import ProcessJsonData
 
 #from enum import Enum
@@ -186,9 +186,9 @@ def create_graph_from_json(graph, graph_mapper, data_provider, add_type_to_key, 
     return graph
 
 
-def extract_node_attrs_from_json(jdata, type_path, attr_list):
-    print('>>> looking for:', type_path)
-    print('>>> looking for attrs:', attr_list)
+def extract_node_attrs_from_json(jdata, type_path, attr_list, is_relative = False):
+    # print('>>> looking for:', type_path)
+    # print('>>> looking for attrs:', attr_list)
     out = []
 
     # make sure our type_path end with '/'
@@ -196,9 +196,9 @@ def extract_node_attrs_from_json(jdata, type_path, attr_list):
     
     def extract_data(jdata, cur_path = '/', cur_obj = None):
         if type(jdata) is dict:            
-            if cur_path == type_path:
-#                 print('<<< MATCHED_TYPE >>>')
-#                 print('@path:', cur_path)
+            if valid_path_to_pick(cur_path, type_path, is_relative):
+                # print('<<< MATCHED_TYPE >>>')
+                # print('@path:', cur_path)
                 obj = {}
                 for a in jdata:
                     extract_data(jdata[a], cur_path + a + '/', obj)
@@ -211,10 +211,12 @@ def extract_node_attrs_from_json(jdata, type_path, attr_list):
             for a in jdata:
                 extract_data(a, cur_path)
         else:
-            print('cur_path: {} - type_path: {}'.format(cur_path, type_path))
-            if cur_obj != None and cur_path in attr_list:
-#                 print('<<< MATCHED_ATTR >>>')
-                cur_obj[cur_path] = jdata
+            # print('cur_path: {} - type_path: {}'.format(cur_path, type_path))
+            if cur_obj != None:
+                attr = attr_in_attrlist(cur_path, attr_list, is_relative)
+                if attr != None:
+                    # print('<<< MATCHED_ATTR >>>')
+                    cur_obj[attr] = jdata
     
     extract_data(jdata)
     return out
@@ -255,6 +257,11 @@ def create_graph_nodes_from_json(graph, graph_mapper,
         # TBD: Need to support multiple keys. For now we'll only have a single key for each record 
 #         print('node_type to process:', node_type)
         node_info['path'] = correct_path(node_info['path'])
+        if node_info['path'].startswith('...'): # relative_path
+            node_info['is_relative'] = True
+            node_info['path'] = node_info['path'].replace('...','')
+        else:
+            node_info['is_relative'] = False
  
         for key in node_info['key']:
             key['raw'] = correct_path(key['raw'])
@@ -289,7 +296,8 @@ def create_graph_nodes_from_json(graph, graph_mapper,
     # iterate and collect.  
     for j in raw_data:
         for node in node_list:
-            jelem = extract_node_attrs_from_json(j, node['path'], node['lookup_attr_list'])
+            jelem = extract_node_attrs_from_json(j, node['path'], node['lookup_attr_list'],
+                        node['is_relative'])
             node['extracted_elem'] = jelem
 
         for node in node_list:
@@ -298,14 +306,14 @@ def create_graph_nodes_from_json(graph, graph_mapper,
                 # print('{} - type_found: {} - attr: {}'.format(count, node['type'], e))
                 node_id = construct_key(node, e, add_type_to_key, '_UNKNOWN_')
                 if not update and graph.has_node(node_id):
-#                         print('graph has node', node_id)
+                    # print('graph has node', node_id)
                     continue
 
                 attr = dict()
                 attr['_type_'] = node['type']
                 for k,v in node['attributes'].items():
                     attr[k] = e[v] if v in e else ''
-                # print('>> adding node: ', node_id)
+                # print('>>> Adding node: ', node_id)
                 graph.add_node(node_id, **attr)
                 count += 1
         
