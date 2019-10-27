@@ -51,7 +51,7 @@ class TestPerformance(unittest.TestCase):
                 data_provider = self.data)
         end = time.time()
         duration = end - start
-        print('# edges: {} - duration:{:.2f} sec'.format(g.number_of_nodes(), duration))
+        print('# nodes: {} - duration:{:.2f} sec'.format(g.number_of_nodes(), duration))
         self.assertTrue(duration < 3)
     
     def test_genClique(self):
@@ -62,7 +62,7 @@ class TestPerformance(unittest.TestCase):
                 data_provider = self.data)
         end = time.time()
         duration = end - start
-        print('# nodes: {} - duration:{:.2f} sec'.format(g.number_of_edges(), duration))
+        print('# edges: {} - duration:{:.2f} sec'.format(g.number_of_edges(), duration))
         self.assertTrue(duration < 4)
 
 # if __name__ == '__main__':

@@ -30,8 +30,8 @@ class TestDeepData(unittest.TestCase):
         key2 = ('TypeB', 'b_val2_21', 'b_val1_21')
         self.assertTrue(key1 in g.nodes)
         self.assertTrue(key2 in g.nodes)
-        print(g.node[key1])
-        print(g.node[key2])
+        # print(g.node[key1])
+        # print(g.node[key2])
         keyU = ('TypeA', '_UNKNOWN_')
         self.assertFalse(keyU in g.nodes)
 

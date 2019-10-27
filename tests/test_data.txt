@@ -1,5 +1,5 @@
-{ "a_attr1" : "a_val1_1", "a_attr2" : "a_val2_1", "path_b" : { "b_attr1" : "b_val1_1", "b_attr2" : "b_val2_1", "path_c" : { "c_attr1" : "c_val1_1" } } }
-{ "a_attr1" : "a_val1_2", "a_attr2" : "a_val2_2", "path_b" : { "b_attr1" : "b_val1_2", "b_attr2" : "b_val2_2", "path_c" : { "c_attr1" : "c_val1_2" } } }
-{ "a_attr1" : "a_val1_3", "a_attr2" : "a_val2_3", "path_b" : { "b_attr1" : "b_val1_3", "b_attr2" : "b_val2_3", "path_c" : { "c_attr1" : "c_val1_3" } } }
-{ "a_attr1" : "a_val1_4", "a_attr2" : "a_val2_4", "path_b" : { "b_attr1" : "b_val1_4", "b_attr2" : "b_val2_4", "path_c" : { "c_attr1" : "c_val1_4" } } }
-{ "a_attr1" : "a_val1_5", "a_attr2" : "a_val2_5", "path_b" : { "b_attr1" : "b_val1_5", "b_attr2" : "b_val2_5", "path_c" : { "c_attr1" : "c_val1_5" } } }
+{ "a_attr1" : "a_val1_1", "a_attr2" : "a_val2_1", "path_b" : { "b_attr1" : "b_val1_1", "b_attr2" : "b_val2_1", "b_time_attr1": "b_time_1_1", "path_c" : { "c_attr1" : "c_val1_1", "c_time_attr1": "c_time_1_1", "c_weight_attr1": "c_weight_1_1" } } }
+{ "a_attr1" : "a_val1_2", "a_attr2" : "a_val2_2", "path_b" : { "b_attr1" : "b_val1_2", "b_attr2" : "b_val2_2", "b_time_attr1": "b_time_1_2", "path_c" : { "c_attr1" : "c_val1_2", "c_time_attr1": "c_time_1_2", "c_weight_attr1": "c_weight_1_2" } } }
+{ "a_attr1" : "a_val1_3", "a_attr2" : "a_val2_3", "path_b" : { "b_attr1" : "b_val1_3", "b_attr2" : "b_val2_3", "b_time_attr1": "b_time_1_3", "path_c" : { "c_attr1" : "c_val1_3", "c_time_attr1": "c_time_1_3", "c_weight_attr1": "c_weight_1_3" } } }
+{ "a_attr1" : "a_val1_4", "a_attr2" : "a_val2_4", "path_b" : { "b_attr1" : "b_val1_4", "b_attr2" : "b_val2_4", "b_time_attr1": "b_time_1_4", "path_c" : { "c_attr1" : "c_val1_4", "c_time_attr1": "c_time_1_4", "c_weight_attr1": "c_weight_1_4" } } }
+{ "a_attr1" : "a_val1_5", "a_attr2" : "a_val2_5", "path_b" : { "b_attr1" : "b_val1_5", "b_attr2" : "b_val2_5", "b_time_attr1": "b_time_1_5", "path_c" : { "c_attr1" : "c_val1_5", "c_time_attr1": "c_time_1_5", "c_weight_attr1": "c_weight_1_5" } } }

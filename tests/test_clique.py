@@ -32,8 +32,8 @@ class TestClique(unittest.TestCase):
         key1 = ('a_val2_2',)
         key2 = ('c_val1_2',)
         self.assertTrue(key1 in g.nodes)
-        print(g.node[key1])
-        print(g.node[key2])
+        # print(g.node[key1])
+        # print(g.node[key2])
     
     def test_genClique(self):
         g = nx.MultiGraph()
