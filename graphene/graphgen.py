@@ -194,22 +194,27 @@ def extract_node_attrs_from_json(jdata, type_path, attr_list, is_relative = Fals
     # make sure our type_path end with '/'
     # correct_path(type_path)
     
-    def extract_data(jdata, cur_path = '/', cur_obj = None):
+    def extract_data(jdata, cur_path = '/', cur_obj = None, collect_data = False):
         if type(jdata) is dict:            
             if valid_path_to_pick(cur_path, type_path, is_relative):
+                collect_data = True
                 # print('<<< MATCHED_TYPE >>>')
                 # print('@path:', cur_path)
-                obj = {}
+                cur_obj = {}
                 for a in jdata:
-                    extract_data(jdata[a], cur_path + a + '/', obj)
-#                 print('>>> got obj', obj)
-                out.append(obj)
+                    extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data)
+#                 print('>>> got obj', cur_obj)
+                out.append(cur_obj)
+                collect_data = False
+            elif collect_data:
+                for a in jdata:
+                    extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data)
             else:
                 for a in jdata:
-                    extract_data(jdata[a], cur_path + a + '/')
+                    extract_data(jdata[a], cur_path + a + '/', collect_data)
         elif type(jdata) is list:
             for a in jdata:
-                extract_data(a, cur_path)
+                extract_data(a, cur_path, cur_obj, collect_data)
         else:
             # print('cur_path: {} - type_path: {}'.format(cur_path, type_path))
             if cur_obj != None:
