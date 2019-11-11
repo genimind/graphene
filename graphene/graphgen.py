@@ -206,12 +206,12 @@ def extract_node_attrs_from_json(jdata, type_path, attr_list, is_relative = Fals
 #                 print('>>> got obj', cur_obj)
                 out.append(cur_obj)
                 collect_data = False
-            elif collect_data:
-                for a in jdata:
-                    extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data)
+            # elif collect_data:
+            #     for a in jdata:
+            #         extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data)
             else:
                 for a in jdata:
-                    extract_data(jdata[a], cur_path + a + '/', collect_data)
+                    extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data)
         elif type(jdata) is list:
             for a in jdata:
                 extract_data(a, cur_path, cur_obj, collect_data)
@@ -328,47 +328,72 @@ def create_graph_nodes_from_json(graph, graph_mapper,
             
 
             
-def extract_edge_attrs_from_json(jdata, src_type_path, dst_type_path, attr_list):
-#     print('>>> looking for:', type_path)
-#     print('>>> looking for attrs:', attr_dict)
+def extract_edge_attrs_from_json(jdata, from_info, to_info, attr_list):
+    # print('>>> looking for from:', from_info['path'])
+    # print('>>> looking for to  :', to_info['path'])
+    # print('>>> looking for attrs:', attr_list)
     out = []
 
     # make sure our type_path end with '/'
     # correct_path(src_type_path)
     # correct_path(dst_type_path)
-        
-    def extract_data(jdata, cur_path = '/', cur_obj = None, got_from = False, got_to = False):
-        if type(jdata) is dict:            
-            if cur_path == src_type_path or cur_path == dst_type_path:
-                if cur_path == src_type_path:
-                    got_from = True
-                else:
-                    got_to = True
-#                 print('<<< MATCHED_TYPE >>>')
-#                 print('@path:', cur_path)
-                obj = {}
-                if cur_obj != None: # we're still collecting
-                    obj = cur_obj
-                for a in jdata:
-                    extract_data(jdata[a], cur_path + a + '/', obj, got_from, got_to)
-#                     print('>>> got edge data:', obj)
-#                 print('got_from:', got_from, ' - got_to:', got_to)
-                if got_from and got_to:
-                    out.append(obj)
-                    got_from = got_to = False
+    from_path = from_info['path']
+    from_is_relative = from_info['is_relative']
+    to_path = to_info['path']
+    to_is_relative = to_info['is_relative']
+ 
+    def extract_data(jdata, cur_path = '/', cur_obj = None, collect_data = False, got_from = False, got_to = False):
+        if type(jdata) is dict: 
+            valid_from = valid_path_to_pick(cur_path, from_path, from_is_relative)
+            valid_to   = valid_path_to_pick(cur_path, to_path, to_is_relative)
+            if valid_from or valid_to:
+                # print('<<< MATCHED_TYPE >>>')
+                # print('@path:', cur_path)
+                if not collect_data: # we need to start collecting
+                    collect_data = True
+                    cur_obj = {}
+                    got_from = valid_from
+                    got_to   = valid_to
+                    # start collecting the rest of the object
+                    # print('... start collecting (1)', collect_data, got_from, got_to)
+                    for a in jdata:
+                        extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data, got_from, got_to)
+                else: # we are collecting now, but we reached a 'from' or a 'to'
+                    # we need a new object to use for collecting based on the original one.
+                    if valid_from and not got_from:
+                        # print('....... in (2) valid_from is true', collect_data, got_from, got_to)
+                        got_from = valid_from
+                    elif valid_to and not got_to:
+                        # print('....... in (2) valid_to is true', collect_data, got_from, got_to)
+                        got_to = valid_to
+                    else: # we are still collecting and we reached another valid_from or valid_to
+                        # print('....... creating new object', collect_data, got_from, got_to)
+                        cur_obj = cur_obj.copy() # setup a new object to collect with
+
+                    if collect_data:
+                        # continue collecting
+                        # print('... continue collecting (2)', collect_data, got_from, got_to)
+                        for a in jdata:
+                            extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data, got_from, got_to)
+                        if got_from and got_to:
+                            # print('>>> collected data (2):', cur_obj)
+                            out.append(cur_obj)
+                            collect_data = False
             else:
                 for a in jdata:
-                    extract_data(jdata[a], cur_path + a + '/', cur_obj, got_from, got_to)
+                    extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data, got_from, got_to)
         elif type(jdata) is list:
             for a in jdata:
-                extract_data(a, cur_path, cur_obj, got_from, got_to)
+                extract_data(a, cur_path, cur_obj, collect_data, got_from, got_to)
         else:
-#             print('cur_path: {} - src_type_path: {} - dst_type_path: {}'.format(cur_path, 
-#                                                                                 src_type_path, dst_type_path))
-            if cur_obj != None and cur_path in attr_list:
-#                 print('<<< MATCHED_ATTR >>>')
-                cur_obj[cur_path] = jdata
-
+            # print('cur_path: {} -- from_path: {} -- to_path: {}'.format(cur_path, 
+            #                                                                    from_path, to_path))
+            if cur_obj != None:
+                attr = attr_in_attrlist(cur_path, attr_list, from_is_relative or to_is_relative)
+                if attr != None:
+                    # print('<<< MATCHED_ATTR >>>')
+                    cur_obj[attr] = jdata
+ 
     extract_data(jdata)
     return out
                 
@@ -408,12 +433,22 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, add_type_to
         # src_type_name = edge_type['from']['type']
         # src_type_path = edge_type['from']['path']
         edge_info['from']['path'] = correct_path(edge_info['from']['path'])
+        if edge_info['from']['path'].startswith('...'): # relative_path
+            edge_info['from']['is_relative'] = True
+            edge_info['from']['path'] = edge_info['from']['path'].replace('...','')
+        else:
+            edge_info['from']['is_relative'] = False
 
         for key in edge_info['from']['key']:
             key['raw'] = correct_path(key['raw'])
         
         # destination node metadata
         edge_info['to']['path'] = correct_path(edge_info['to']['path'])
+        if edge_info['to']['path'].startswith('...'): # relative_path
+            edge_info['to']['is_relative'] = True
+            edge_info['to']['path'] = edge_info['to']['path'].replace('...','')
+        else:
+            edge_info['to']['is_relative'] = False
 
         for key in edge_info['to']['key']:
             key['raw'] = correct_path(key['raw'])
@@ -456,7 +491,7 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, add_type_to
     for j in raw_data:
         for edge in edge_list:
     #       print('json>> ', j)
-            jelem = extract_edge_attrs_from_json(j, edge['from']['path'], edge['to']['path'], edge['lookup_attr_list'])
+            jelem = extract_edge_attrs_from_json(j, edge['from'], edge['to'], edge['lookup_attr_list'])
             edge['extracted_elem'] = jelem
         
         for edge in edge_list:

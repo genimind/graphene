@@ -27,7 +27,7 @@ class TestReadEdges(unittest.TestCase):
         g = graphgen.create_graph(g, 
                 graph_mapper = self.edge_mapper, 
                 data_provider = self.data, add_type_to_key = True)
-        # print(g.edges)
+        # print('NODES:', list(g.nodes(data = True)))
         self.assertEqual(nx.number_of_nodes(g), 15)
         self.assertEqual(nx.number_of_edges(g), 10)
         # get node with key.

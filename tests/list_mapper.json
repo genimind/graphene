@@ -1,0 +1,25 @@
+{
+"nodes": [
+  {
+    "type": "TypeA",
+    "path": "/path_a",
+    "key" : [
+      {"name": "attr1", "raw": "/a_attr1"}
+    ],
+  	"attributes": [
+      {"name": "attr1", "raw": "/a_attr1"},
+      {"name": "attr2", "raw": "/a_attr2"}
+    ]
+  },
+  {
+    "type": "TypeB",
+    "path": "/path_a/path_b[]",
+    "key" : [
+      {"name": "name", "raw": "[x]"}
+    ],
+    "attributes": [
+      {"name": "name", "raw": "[x]"}
+    ]
+  }
+}
+
