@@ -259,17 +259,7 @@ def create_graph_nodes_from_json(graph, graph_mapper,
     for node_info in nodes:
         # TBD... assert check_attributes(node_type, raw_data, node_type['attributes'])
        
-        # TBD: Need to support multiple keys. For now we'll only have a single key for each record 
-#         print('node_type to process:', node_type)
-        node_info['path'] = correct_path(node_info['path'])
-        if node_info['path'].startswith('...'): # relative_path
-            node_info['is_relative'] = True
-            node_info['path'] = node_info['path'].replace('...','')
-        else:
-            node_info['is_relative'] = False
- 
-        for key in node_info['key']:
-            key['raw'] = correct_path(key['raw'])
+        node_info = configure_node_info(node_info)
 
         attr_dict = {}
         if 'attributes' in node_info:
@@ -281,17 +271,10 @@ def create_graph_nodes_from_json(graph, graph_mapper,
         node_info['attributes'] = attr_dict
         
         # construct attribute mapping between raw_attrib_name -> attrib_name
-        lookup_attr_list = []
+        lookup_attr_list = list(attr_dict.values())
     
-        for k, v in attr_dict.items():
-            v = correct_path(v)
-            lookup_attr_list.append(v)
-        
         # make sure we have the key_raw_name in the list of attributes
-        for key in node_info['key']:
-            if key['raw'] not in lookup_attr_list:
-                lookup_attr_list.append(key['raw'])
-
+        append_keys_to_lookup_attributes(node_info, lookup_attr_list)
         node_info['lookup_attr_list'] = lookup_attr_list
 
         node_list.append(node_info)
@@ -421,38 +404,15 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, add_type_to
 
     raw_data = data_provider
     
-#     print(edge_types)
     for edge_info in edges:
         
         # TBD... assert check_attributes(edge_type, raw_data, edge_type['attributes'])
 
-        # TBD: Need to support multiple keys. For now we'll only have a single key for each record 
-        # edge_type_name = edge_type['type']
-
         # source node metadata
-        # src_type_name = edge_type['from']['type']
-        # src_type_path = edge_type['from']['path']
-        edge_info['from']['path'] = correct_path(edge_info['from']['path'])
-        if edge_info['from']['path'].startswith('...'): # relative_path
-            edge_info['from']['is_relative'] = True
-            edge_info['from']['path'] = edge_info['from']['path'].replace('...','')
-        else:
-            edge_info['from']['is_relative'] = False
-
-        for key in edge_info['from']['key']:
-            key['raw'] = correct_path(key['raw'])
+        edge_info['from'] = configure_node_info(edge_info['from'])
         
         # destination node metadata
-        edge_info['to']['path'] = correct_path(edge_info['to']['path'])
-        if edge_info['to']['path'].startswith('...'): # relative_path
-            edge_info['to']['is_relative'] = True
-            edge_info['to']['path'] = edge_info['to']['path'].replace('...','')
-        else:
-            edge_info['to']['is_relative'] = False
-
-        for key in edge_info['to']['key']:
-            key['raw'] = correct_path(key['raw'])
-    
+        edge_info['to'] = configure_node_info(edge_info['to'])
 
         attr_dict = {}
         if 'attributes' in edge_info:
@@ -464,22 +424,12 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, add_type_to
         edge_info['attributes'] = attr_dict
  
         # construct attribute mapping between raw_attrib_name_path -> attrib_name
-        lookup_attr_list = []
-    
-        # TBD: review this code, not sure if it's necessary
-        for k, v in attr_dict.items():
-            lookup_attr_list.append(v)
-
+        lookup_attr_list = list(attr_dict.values())
 
         # make sure we have the src_key_raw_name, and dest_key_raw_name in the list of attributes
         # (TBD: currently, we can't have both names the same)
-        for key in edge_info['from']['key']:
-            if key['raw'] not in lookup_attr_list:
-                lookup_attr_list.append(key['raw'])
-
-        for key in edge_info['to']['key']:
-            if key['raw'] not in lookup_attr_list:
-                lookup_attr_list.append(key['raw'])
+        append_keys_to_lookup_attributes(edge_info['from'], lookup_attr_list)
+        append_keys_to_lookup_attributes(edge_info['to'], lookup_attr_list)
 
         edge_info['lookup_attr_list'] = lookup_attr_list
 
@@ -498,17 +448,13 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, add_type_to
             jelem = edge['extracted_elem']
             for e in jelem:
 #                     print('{} - src: {} - dest: {} - attr: {}'.format(count, src_type_name, dst_type_name, e))
-                # src_key_value = e[src_key_raw_name] if src_key_raw_name in e else '_UNKNOWN_'
                 from_id = construct_key(edge['from'], e, add_type_to_key, '_UNKNOWN_')
-                # dst_key_value = e[dst_key_raw_name] if dst_key_raw_name in e else '_UNKNOWN_'
                 to_id = construct_key(edge['to'], e, add_type_to_key, '_UNKNOWN_')
 
                 attr = dict()
                 attr['_type_'] = edge['type']
                 for k,v in edge['attributes'].items():
                     attr[k] = e[v] if v in e else ''
-                # from_id = (src_type_name, str(src_key_value))
-                # to_id = (dst_type_name, str(dst_key_value))
 #                     print('adding edge from: {} -> to: {}, attr: {}'.format(from_id, to_id, attr))
                 graph.add_edge(from_id, to_id, **attr)
                 count += 1

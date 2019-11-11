@@ -4,11 +4,11 @@
     "type": "TypeA",
     "path": "/path_a",
     "key" : [
-      {"name": "attr1", "raw": "/a_attr1"}
+      {"name": "attr1", "raw": "/path_a/a_attr1"}
     ],
   	"attributes": [
-      {"name": "attr1", "raw": "/a_attr1"},
-      {"name": "attr2", "raw": "/a_attr2"}
+      {"name": "attr1", "raw": "/path_a/a_attr1"},
+      {"name": "attr2", "raw": "/path_a/a_attr2"}
     ]
   },
   {
@@ -21,5 +21,6 @@
       {"name": "name", "raw": "[x]"}
     ]
   }
+]
 }
 

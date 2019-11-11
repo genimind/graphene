@@ -50,3 +50,24 @@ def attr_in_attrlist(cur_path, attr_list, is_relative = False):
             ret_attr = cur_path
 
     return ret_attr
+
+
+def configure_node_info(node_info):
+    node_info['path'] = correct_path(node_info['path'])
+    if node_info['path'].startswith('...'): # relative_path
+        node_info['is_relative'] = True
+        node_info['path'] = node_info['path'].replace('...','')
+    else:
+        node_info['is_relative'] = False
+
+    for key in node_info['key']:
+        key['raw'] = correct_path(key['raw'])
+
+    return node_info
+
+def append_keys_to_lookup_attributes(node_info, attr_list):
+    for key in node_info['key']:
+        if key['raw'] not in attr_list:
+            attr_list.append(key['raw'])
+
+        
