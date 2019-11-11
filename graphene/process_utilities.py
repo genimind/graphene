@@ -53,7 +53,6 @@ def attr_in_attrlist(cur_path, attr_list, is_relative = False):
 
 
 def configure_node_info(node_info):
-    node_info['path'] = correct_path(node_info['path'])
     node_info['is_relative'] = False
     node_info['is_list'] = False
 
@@ -63,11 +62,15 @@ def configure_node_info(node_info):
 
     if node_info['path'].endswith('[]'): # nodes from list
         node_info['is_list'] = True
+        node_info['path'] = node_info['path'].replace('[]','')
+
+    node_info['path'] = correct_path(node_info['path'])
 
     for key in node_info['key']:
         key['raw'] = correct_path(key['raw'])
 
     return node_info
+
 
 def append_keys_to_lookup_attributes(node_info, attr_list):
     for key in node_info['key']:

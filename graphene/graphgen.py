@@ -194,22 +194,21 @@ def extract_node_attrs_from_json(jdata, node_info):
 
     # print('>>> looking for:', type_path)
     # print('>>> looking for attrs:', attr_list)
+    # print('>>> is_relative', is_relative)
+    # print('>>> is_list', is_list)
 
     out = []
 
-    # make sure our type_path end with '/'
-    # correct_path(type_path)
-    
     def extract_data(jdata, cur_path = '/', cur_obj = None, collect_data = False):
         if type(jdata) is dict:            
             if valid_path_to_pick(cur_path, type_path, is_relative):
                 collect_data = True
                 # print('<<< MATCHED_TYPE >>>')
                 # print('@path:', cur_path)
-                cur_obj = {}
+                # cur_obj = {}
                 for a in jdata:
                     extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data)
-#                 print('>>> got obj', cur_obj)
+                # print('>>> got obj', cur_obj)
                 out.append(cur_obj)
                 collect_data = False
             # elif collect_data:
@@ -219,8 +218,16 @@ def extract_node_attrs_from_json(jdata, node_info):
                 for a in jdata:
                     extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data)
         elif type(jdata) is list:
-            for a in jdata:
-                extract_data(a, cur_path, cur_obj, collect_data)
+            # print('LIST >> cur_path: {} - type_path: {}'.format(cur_path, type_path))
+            if is_list and valid_path_to_pick(cur_path, type_path, is_relative):
+                for a in jdata:
+                    # print('list_item:', a)
+                    cur_obj = {}
+                    cur_obj['__item__/'] = a # we just use the format specifically as a special case
+                    out.append(cur_obj)
+            else: # just normal processing.
+                for a in jdata:
+                    extract_data(a, cur_path, cur_obj, collect_data)
         else:
             # print('cur_path: {} - type_path: {}'.format(cur_path, type_path))
             if cur_obj != None:
@@ -317,26 +324,30 @@ def create_graph_nodes_from_json(graph, graph_mapper,
 
             
 def extract_edge_attrs_from_json(jdata, from_info, to_info, attr_list):
-    # print('>>> looking for from:', from_info['path'])
-    # print('>>> looking for to  :', to_info['path'])
-    # print('>>> looking for attrs:', attr_list)
-    out = []
-
-    # make sure our type_path end with '/'
-    # correct_path(src_type_path)
-    # correct_path(dst_type_path)
     from_path = from_info['path']
     from_is_relative = from_info['is_relative']
+    from_is_list = from_info['is_list']
     to_path = to_info['path']
     to_is_relative = to_info['is_relative']
+    to_is_list = to_info['is_list']
+
+    print('>>> looking for from:', from_info['path'])
+    print('>>> from is_relative', from_is_relative)
+    print('>>> from is_list', from_is_list)
+    print('>>> looking for to  :', to_info['path'])
+    print('>>> to is_relative', to_is_relative)
+    print('>>> to is_list', to_is_list)
+    print('>>> looking for attrs:', attr_list)
+
+    out = []
  
     def extract_data(jdata, cur_path = '/', cur_obj = None, collect_data = False, got_from = False, got_to = False):
         if type(jdata) is dict: 
             valid_from = valid_path_to_pick(cur_path, from_path, from_is_relative)
             valid_to   = valid_path_to_pick(cur_path, to_path, to_is_relative)
             if valid_from or valid_to:
-                # print('<<< MATCHED_TYPE >>>')
-                # print('@path:', cur_path)
+                print('<<< MATCHED_TYPE >>>')
+                print('@path:', cur_path)
                 if not collect_data: # we need to start collecting
                     collect_data = True
                     cur_obj = {}
@@ -364,22 +375,35 @@ def extract_edge_attrs_from_json(jdata, from_info, to_info, attr_list):
                         for a in jdata:
                             extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data, got_from, got_to)
                         if got_from and got_to:
-                            # print('>>> collected data (2):', cur_obj)
+                            print('>>> collected data (2):', cur_obj)
                             out.append(cur_obj)
                             collect_data = False
             else:
                 for a in jdata:
                     extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data, got_from, got_to)
         elif type(jdata) is list:
-            for a in jdata:
-                extract_data(a, cur_path, cur_obj, collect_data, got_from, got_to)
+            print('LIST >> cur_path: {} - from_path: {}, to_path: {}'.format(cur_path, from_path, to_path))
+            if (from_is_list and \
+                valid_path_to_pick(cur_path, from_path, from_is_relative)) or \
+                (to_is_list and \
+                    valid_path_to_pick(cur_path, to_path, to_is_relative)):
+                # collect the items as nodes.
+                for a in jdata:
+                    # print('list_item:', a)
+                    cur_obj = {}
+                    cur_obj['__item__/'] = a # we just use the format specifically as a special case
+                    print('>>> collected data (3):', cur_obj)
+                    out.append(cur_obj)
+            else:
+                for a in jdata:
+                    extract_data(a, cur_path, cur_obj, collect_data, got_from, got_to)
         else:
             # print('cur_path: {} -- from_path: {} -- to_path: {}'.format(cur_path, 
             #                                                                    from_path, to_path))
             if cur_obj != None:
                 attr = attr_in_attrlist(cur_path, attr_list, from_is_relative or to_is_relative)
                 if attr != None:
-                    # print('<<< MATCHED_ATTR >>>')
+                    print('<<< MATCHED_ATTR >>>')
                     cur_obj[attr] = jdata
  
     extract_data(jdata)

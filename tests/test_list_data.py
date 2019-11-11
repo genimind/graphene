@@ -25,8 +25,8 @@ class TestLisData(unittest.TestCase):
                 graph_mapper = self.mapper, 
                 data_provider = self.data, add_type_to_key = True)
         print('NODES1:', g.nodes(data = True))
-        self.assertEqual(nx.number_of_nodes(g), 8)
-        self.assertEqual(nx.number_of_edges(g), 6)
+        self.assertEqual(nx.number_of_nodes(g), 9)
+        self.assertEqual(nx.number_of_edges(g), 10)
         # get node with key.
         key1 = ('TypeA', 'a_val1_1')
         key2 = ('TypeB', 'b_Text_2')
