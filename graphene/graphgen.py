@@ -186,9 +186,15 @@ def create_graph_from_json(graph, graph_mapper, data_provider, add_type_to_key, 
     return graph
 
 
-def extract_node_attrs_from_json(jdata, type_path, attr_list, is_relative = False):
+def extract_node_attrs_from_json(jdata, node_info):
+    type_path = node_info['path']
+    attr_list = node_info['lookup_attr_list']
+    is_relative = node_info['is_relative']
+    is_list = node_info['is_list']
+
     # print('>>> looking for:', type_path)
     # print('>>> looking for attrs:', attr_list)
+
     out = []
 
     # make sure our type_path end with '/'
@@ -260,7 +266,7 @@ def create_graph_nodes_from_json(graph, graph_mapper,
         # TBD... assert check_attributes(node_type, raw_data, node_type['attributes'])
        
         node_info = configure_node_info(node_info)
-
+ 
         attr_dict = {}
         if 'attributes' in node_info:
             for a in node_info['attributes']:
@@ -274,7 +280,7 @@ def create_graph_nodes_from_json(graph, graph_mapper,
         lookup_attr_list = list(attr_dict.values())
     
         # make sure we have the key_raw_name in the list of attributes
-        append_keys_to_lookup_attributes(node_info, lookup_attr_list)
+        lookup_attr_list = append_keys_to_lookup_attributes(node_info, lookup_attr_list)
         node_info['lookup_attr_list'] = lookup_attr_list
 
         node_list.append(node_info)
@@ -284,8 +290,7 @@ def create_graph_nodes_from_json(graph, graph_mapper,
     # iterate and collect.  
     for j in raw_data:
         for node in node_list:
-            jelem = extract_node_attrs_from_json(j, node['path'], node['lookup_attr_list'],
-                        node['is_relative'])
+            jelem = extract_node_attrs_from_json(j, node)
             node['extracted_elem'] = jelem
 
         for node in node_list:
@@ -428,8 +433,8 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, add_type_to
 
         # make sure we have the src_key_raw_name, and dest_key_raw_name in the list of attributes
         # (TBD: currently, we can't have both names the same)
-        append_keys_to_lookup_attributes(edge_info['from'], lookup_attr_list)
-        append_keys_to_lookup_attributes(edge_info['to'], lookup_attr_list)
+        lookup_attr_list = append_keys_to_lookup_attributes(edge_info['from'], lookup_attr_list)
+        lookup_attr_list = append_keys_to_lookup_attributes(edge_info['to'], lookup_attr_list)
 
         edge_info['lookup_attr_list'] = lookup_attr_list
 
@@ -507,9 +512,10 @@ def create_graph_clique_from_json(graph, graph_mapper, data_provider, add_type_t
         for node_info in nodes:
             # TBD... assert check_attributes(node_info, raw_data, node_info['attributes'])        
         #         print('node_info to process:', node_info)
-            node_info['path'] = correct_path(node_info['path'])
-            for key in node_info['key']:
-                key['raw'] = correct_path(key['raw'])
+            # node_info['path'] = correct_path(node_info['path'])
+            # for key in node_info['key']:
+            #     key['raw'] = correct_path(key['raw'])
+            node_info = configure_node_info(node_info)
 
             attr_dict = {}
             if 'attributes' in node_info:
@@ -520,16 +526,17 @@ def create_graph_clique_from_json(graph, graph_mapper, data_provider, add_type_t
             node_info['attributes'] = attr_dict 
             
             # construct attribute mapping between raw_attrib_name -> attrib_name
-            lookup_attr_list = []
+            lookup_attr_list = list(attr_dict.values())
         
-            for k, v in attr_dict.items():
-                v = correct_path(v)
-                lookup_attr_list.append(v)
+            # for k, v in attr_dict.items():
+            #     v = correct_path(v)
+            #     lookup_attr_list.append(v)
 
-            for key in node_info['key']:
-                if key['raw'] not in lookup_attr_list:
-                    lookup_attr_list.append(key['raw'])
+            # for key in node_info['key']:
+            #     if key['raw'] not in lookup_attr_list:
+            #         lookup_attr_list.append(key['raw'])
 
+            lookup_attr_list = append_keys_to_lookup_attributes(node_info, lookup_attr_list)
             node_info['lookup_attr_list'] = lookup_attr_list            
 
             # print('node_meta:', node_meta)
@@ -542,7 +549,7 @@ def create_graph_clique_from_json(graph, graph_mapper, data_provider, add_type_t
         for j in raw_data:
 #             print('json>> ', j)
             for node in node_list:
-                jelem = extract_node_attrs_from_json(j, node['path'], node['lookup_attr_list'])
+                jelem = extract_node_attrs_from_json(j, node)
                 node['extracted_elem'] = jelem
 
             # construct the clique
