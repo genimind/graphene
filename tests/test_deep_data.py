@@ -27,7 +27,7 @@ class TestDeepData(unittest.TestCase):
         g = graphgen.create_graph(g, 
                 graph_mapper = self.node_mapper, 
                 data_provider = self.data, add_type_to_key = True)
-        print('NODES1:', g.nodes(data = True))
+        # print('\nNODES1:', g.nodes(data = True))
         self.assertEqual(nx.number_of_nodes(g), 21)
         # get node with key.
         key1 = ('TypeA', 'a_val2_1')
@@ -44,9 +44,10 @@ class TestDeepData(unittest.TestCase):
         g = graphgen.create_graph(g, 
                 graph_mapper = self.edge_mapper, 
                 data_provider = self.data, add_type_to_key = True)
-        print('NODES2:', g.nodes(data = True))
+        # print('\nNODES2:', g.nodes(data = True))
         self.assertEqual(nx.number_of_nodes(g), 21)
-        self.assertEqual(nx.number_of_edges(g), 18)
+        # print('\nEDGES2:', g.edges())
+        self.assertEqual(nx.number_of_edges(g), 38)
         # get node with key.
         key1 = ('TypeA', 'a_val2_1')
         key2 = ('TypeB', 'b_val2_1', 'b_val1_1')

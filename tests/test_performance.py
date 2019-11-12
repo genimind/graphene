@@ -28,7 +28,7 @@ class TestPerformance(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.num_of_elements = 100000
+        cls.num_of_elements = 10000
         cls.data = []
         for i in range(cls.num_of_elements):
             obj = {

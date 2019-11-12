@@ -205,7 +205,7 @@ def extract_node_attrs_from_json(jdata, node_info):
                 collect_data = True
                 # print('<<< MATCHED_TYPE >>>')
                 # print('@path:', cur_path)
-                # cur_obj = {}
+                cur_obj = {}
                 for a in jdata:
                     extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data)
                 # print('>>> got obj', cur_obj)
@@ -265,10 +265,7 @@ def create_graph_nodes_from_json(graph, graph_mapper,
     nodes = graph_mapper['nodes']
  
     raw_data = data_provider
-    
-#     print(node_types)
-#     print(edge_types)
-    
+        
     for node_info in nodes:
         # TBD... assert check_attributes(node_type, raw_data, node_type['attributes'])
        
@@ -303,7 +300,7 @@ def create_graph_nodes_from_json(graph, graph_mapper,
         for node in node_list:
             jelem = node['extracted_elem']
             for e in jelem:
-                # print('{} - type_found: {} - attr: {}'.format(count, node['type'], e))
+                # print('>>----<< {} - node_info: {} - attr: {}'.format(count, node, e))
                 node_id = construct_key(node, e, add_type_to_key, '_UNKNOWN_')
                 if not update and graph.has_node(node_id):
                     # print('graph has node', node_id)
@@ -323,91 +320,81 @@ def create_graph_nodes_from_json(graph, graph_mapper,
             
 
             
-def extract_edge_attrs_from_json(jdata, from_info, to_info, attr_list):
-    from_path = from_info['path']
-    from_is_relative = from_info['is_relative']
-    from_is_list = from_info['is_list']
-    to_path = to_info['path']
-    to_is_relative = to_info['is_relative']
-    to_is_list = to_info['is_list']
+# def extract_edge_attrs_from_json(jdata, from_info, to_info, attr_list):
+    # from_path = from_info['path']
+    # from_is_relative = from_info['is_relative']
+    # from_is_list = from_info['is_list']
+    # to_path = to_info['path']
+    # to_is_relative = to_info['is_relative']
+    # to_is_list = to_info['is_list']
 
-    print('>>> looking for from:', from_info['path'])
-    print('>>> from is_relative', from_is_relative)
-    print('>>> from is_list', from_is_list)
-    print('>>> looking for to  :', to_info['path'])
-    print('>>> to is_relative', to_is_relative)
-    print('>>> to is_list', to_is_list)
-    print('>>> looking for attrs:', attr_list)
+    # print('>>> looking for from:', from_info['path'])
+    # print('>>> from is_relative', from_is_relative)
+    # print('>>> from is_list', from_is_list)
+    # print('>>> looking for to  :', to_info['path'])
+    # print('>>> to is_relative', to_is_relative)
+    # print('>>> to is_list', to_is_list)
+    # print('>>> looking for attrs:', attr_list)
 
-    out = []
- 
-    def extract_data(jdata, cur_path = '/', cur_obj = None, collect_data = False, got_from = False, got_to = False):
-        if type(jdata) is dict: 
-            valid_from = valid_path_to_pick(cur_path, from_path, from_is_relative)
-            valid_to   = valid_path_to_pick(cur_path, to_path, to_is_relative)
-            if valid_from or valid_to:
-                print('<<< MATCHED_TYPE >>>')
-                print('@path:', cur_path)
-                if not collect_data: # we need to start collecting
-                    collect_data = True
-                    cur_obj = {}
-                    got_from = valid_from
-                    got_to   = valid_to
-                    # start collecting the rest of the object
-                    # print('... start collecting (1)', collect_data, got_from, got_to)
-                    for a in jdata:
-                        extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data, got_from, got_to)
-                else: # we are collecting now, but we reached a 'from' or a 'to'
-                    # we need a new object to use for collecting based on the original one.
-                    if valid_from and not got_from:
-                        # print('....... in (2) valid_from is true', collect_data, got_from, got_to)
-                        got_from = valid_from
-                    elif valid_to and not got_to:
-                        # print('....... in (2) valid_to is true', collect_data, got_from, got_to)
-                        got_to = valid_to
-                    else: # we are still collecting and we reached another valid_from or valid_to
-                        # print('....... creating new object', collect_data, got_from, got_to)
-                        cur_obj = cur_obj.copy() # setup a new object to collect with
+    # out_list = []
+    
+    # def extract_data(jdata, cur_path = '/', from_count = 0, to_count = 0):
+    #     if type(jdata) is dict: 
+    #         print('dict(): cur_path: ', cur_path, '- from_count: ', from_count, ', to_count:', to_count)
+    #         valid_from = valid_path_to_pick(cur_path, from_path, from_is_relative)
+    #         valid_to   = valid_path_to_pick(cur_path, to_path, to_is_relative)
+    #         if valid_from or valid_to:
+    #             print('@path:', cur_path, '<<< MATCHED_TYPE >>>')
+    #             old_from_count = from_count
+    #             old_to_count = to_count
+    #             if valid_from:
+    #                 from_count += 1
+    #             if valid_to:
+    #                 to_count += 1
+    #             if from_count != to_count:
+    #                 # we need a new object to use for collecting based on the original one.
+    #                 print('....... creating new object', from_count, to_count)
+    #                 if len(out_list) == 0:
+    #                     out_list.append({})
+    #                 else:
+    #                     anObj = out_list[-1].copy() # setup a new object to collect with
+    #                     out_list.append(anObj)
+    #             print('... continue collecting (2) old, old, new, new', 
+    #                     old_from_count, old_to_count, from_count, to_count)
+    #             for a in jdata:
+    #                 extract_data(jdata[a], cur_path + a + '/', from_count, to_count)
+    #         else:
+    #             for a in jdata:
+    #                 extract_data(jdata[a], cur_path + a + '/', from_count, to_count)
+    #         # if len(out_list) > 0:
+    #         #     print('...out_list:', out_list)
 
-                    if collect_data:
-                        # continue collecting
-                        # print('... continue collecting (2)', collect_data, got_from, got_to)
-                        for a in jdata:
-                            extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data, got_from, got_to)
-                        if got_from and got_to:
-                            print('>>> collected data (2):', cur_obj)
-                            out.append(cur_obj)
-                            collect_data = False
-            else:
-                for a in jdata:
-                    extract_data(jdata[a], cur_path + a + '/', cur_obj, collect_data, got_from, got_to)
-        elif type(jdata) is list:
-            print('LIST >> cur_path: {} - from_path: {}, to_path: {}'.format(cur_path, from_path, to_path))
-            if (from_is_list and \
-                valid_path_to_pick(cur_path, from_path, from_is_relative)) or \
-                (to_is_list and \
-                    valid_path_to_pick(cur_path, to_path, to_is_relative)):
-                # collect the items as nodes.
-                for a in jdata:
-                    # print('list_item:', a)
-                    cur_obj = {}
-                    cur_obj['__item__/'] = a # we just use the format specifically as a special case
-                    print('>>> collected data (3):', cur_obj)
-                    out.append(cur_obj)
-            else:
-                for a in jdata:
-                    extract_data(a, cur_path, cur_obj, collect_data, got_from, got_to)
-        else:
-            # print('cur_path: {} -- from_path: {} -- to_path: {}'.format(cur_path, 
-            #                                                                    from_path, to_path))
-            if cur_obj != None:
-                attr = attr_in_attrlist(cur_path, attr_list, from_is_relative or to_is_relative)
-                if attr != None:
-                    print('<<< MATCHED_ATTR >>>')
-                    cur_obj[attr] = jdata
- 
-    extract_data(jdata)
-    return out
+    #     elif type(jdata) is list:
+    #         print('LIST >> cur_path: {} - from_path: {}, to_path: {}'.format(cur_path, from_path, to_path))
+    #         if (from_is_list and \
+    #             valid_path_to_pick(cur_path, from_path, from_is_relative)) or \
+    #             (to_is_list and \
+    #                 valid_path_to_pick(cur_path, to_path, to_is_relative)):
+    #             # collect the items as nodes.
+    #             for a in jdata:
+    #                 # print('list_item:', a)
+    #                 out_list.append({})
+    #                 out_list[-1]['__item__/'] = a # we just use the format specifically as a special case
+    #                 # print('>>> collected data (3):', out_list[-1])
+                    
+    #         else:
+    #             for a in jdata:
+    #                 extract_data(a, cur_path, from_count, to_count)
+    #     else:
+    #         # print('cur_path: {} -- from_path: {} -- to_path: {}'.format(cur_path, 
+    #         #                                                                    from_path, to_path))
+    #         attr = attr_in_attrlist(cur_path, attr_list, from_is_relative or to_is_relative)
+    #         if attr != None:
+    #             # print('@path:', cur_path, '<<< MATCHED_ATTR >>>')
+    #             out_list[-1][attr] = jdata
+   
+    # extract_data(jdata)
+    # return out_list
                 
             
 def create_graph_edges_from_json(graph, graph_mapper, data_provider, add_type_to_key, update = True, verbose = False):
@@ -433,8 +420,7 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, add_type_to
 
     raw_data = data_provider
     
-    for edge_info in edges:
-        
+    for edge_info in edges:       
         # TBD... assert check_attributes(edge_type, raw_data, edge_type['attributes'])
 
         # source node metadata
@@ -443,24 +429,33 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, add_type_to
         # destination node metadata
         edge_info['to'] = configure_node_info(edge_info['to'])
 
-        attr_dict = {}
+        from_attr_dict = {}
+        to_attr_dict = {}
+        # Process the attributes and add them to either the from_attr_dict or the 
+        # to attr_dict
         if 'attributes' in edge_info:
             for a in edge_info['attributes']:
                 raw_attr = a['raw']
                 raw_attr = correct_path(raw_attr)
-                attr_dict[a['name']] = raw_attr
+                if raw_attr.startswith(edge_info['from']['path']):
+                    from_attr_dict[a['name']] = raw_attr
+                else:
+                    to_attr_dict[a['name']] = raw_attr
             
-        edge_info['attributes'] = attr_dict
+        edge_info['from']['attributes'] = from_attr_dict
+        edge_info['to']['attributes'] = to_attr_dict
+        
  
         # construct attribute mapping between raw_attrib_name_path -> attrib_name
-        lookup_attr_list = list(attr_dict.values())
+        from_lookup_attr_list = list(from_attr_dict.values())
+        to_lookup_attr_list = list(to_attr_dict.values())
 
         # make sure we have the src_key_raw_name, and dest_key_raw_name in the list of attributes
-        # (TBD: currently, we can't have both names the same)
-        lookup_attr_list = append_keys_to_lookup_attributes(edge_info['from'], lookup_attr_list)
-        lookup_attr_list = append_keys_to_lookup_attributes(edge_info['to'], lookup_attr_list)
+        from_lookup_attr_list = append_keys_to_lookup_attributes(edge_info['from'], from_lookup_attr_list)
+        to_lookup_attr_list = append_keys_to_lookup_attributes(edge_info['to'], to_lookup_attr_list)
 
-        edge_info['lookup_attr_list'] = lookup_attr_list
+        edge_info['from']['lookup_attr_list'] = from_lookup_attr_list
+        edge_info['to']['lookup_attr_list'] = to_lookup_attr_list
 
         edge_list.append(edge_info)
         
@@ -470,24 +465,30 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, add_type_to
     for j in raw_data:
         for edge in edge_list:
     #       print('json>> ', j)
-            jelem = extract_edge_attrs_from_json(j, edge['from'], edge['to'], edge['lookup_attr_list'])
-            edge['extracted_elem'] = jelem
+            jelem = extract_node_attrs_from_json(j, edge['from'])
+            edge['from']['extracted_elem'] = jelem
+            jelem = extract_node_attrs_from_json(j, edge['to'])
+            edge['to']['extracted_elem'] = jelem
+
         
         for edge in edge_list:
-            jelem = edge['extracted_elem']
-            for e in jelem:
+            extracted_from = edge['from']['extracted_elem']
+            extracted_to = edge['to']['extracted_elem']
+            for felem in extracted_from:
+                for telem in extracted_to:
 #                     print('{} - src: {} - dest: {} - attr: {}'.format(count, src_type_name, dst_type_name, e))
-                from_id = construct_key(edge['from'], e, add_type_to_key, '_UNKNOWN_')
-                to_id = construct_key(edge['to'], e, add_type_to_key, '_UNKNOWN_')
+                    from_id = construct_key(edge['from'], felem, add_type_to_key, '_UNKNOWN_')
+                    to_id = construct_key(edge['to'], telem, add_type_to_key, '_UNKNOWN_')
 
-                attr = dict()
-                attr['_type_'] = edge['type']
-                for k,v in edge['attributes'].items():
-                    attr[k] = e[v] if v in e else ''
+                    attr = dict()
+                    attr['_type_'] = edge['type']
+                    for k,v in edge['from']['attributes'].items():
+                        attr[k] = felem[v] if v in felem else ''
+                    for k,v in edge['to']['attributes'].items():
+                        attr[k] = telem[v] if v in telem else ''
 #                     print('adding edge from: {} -> to: {}, attr: {}'.format(from_id, to_id, attr))
-                graph.add_edge(from_id, to_id, **attr)
-                count += 1
-                
+                    graph.add_edge(from_id, to_id, **attr)
+                    count += 1                
     # if verbose:
     #     print('type: {} -> {} - {}'.format(src_type_path, dst_type_path, count))
     
