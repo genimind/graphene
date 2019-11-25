@@ -288,7 +288,7 @@ def create_graph_nodes_from_json(graph, graph_mapper,
                 pattern = re.compile(a['pattern') if 'pattern' in a else None
                 attr_dict[a['name']] = (raw_attr, pattern)
 
-        node_info['attributes'] = attr_dict
+        node_info['attr_info'] = attr_dict
         
         # construct attribute mapping between raw_attrib_name -> attrib_name
         lookup_attr_list = list(attr_dict.values())
@@ -318,7 +318,7 @@ def create_graph_nodes_from_json(graph, graph_mapper,
 
                 attr = dict()
                 attr['_type_'] = node['type']
-                for k,v in node['attributes'].items():
+                for k,v in node['attr_info'].items():
                     attr[k] = e[v] if v in e else ''
                 # print('>>> Adding node: ', node_id)
                 graph.add_node(node_id, **attr)
@@ -453,8 +453,8 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, add_type_to
                 else:
                     to_attr_dict[a['name']] = (raw_attr, pattern
             
-        edge_info['from']['attributes'] = from_attr_dict
-        edge_info['to']['attributes'] = to_attr_dict
+        edge_info['from']['attr_info'] = from_attr_dict
+        edge_info['to']['attr_info'] = to_attr_dict
         
  
         # construct attribute mapping between raw_attrib_name_path -> attrib_name
@@ -560,7 +560,7 @@ def create_graph_clique_from_json(graph, graph_mapper, data_provider, add_type_t
                     raw_attr = correct_path(raw_attr)
                     pattern = re.compile(a['pattern']) if 'pattern' in a else None
                     attr_dict[a['name']] = (raw_attr, pattern)
-            node_info['attributes'] = attr_dict 
+            node_info['attr_info'] = attr_dict 
             
             # construct attribute mapping between raw_attrib_name -> attrib_name
             lookup_attr_list = list(attr_dict.values())
