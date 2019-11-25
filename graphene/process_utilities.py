@@ -13,7 +13,7 @@ def construct_key(node_info, node_data, add_type_to_key, invalid_value = None):
     if add_type_to_key:
         key_list.append(node_info['type'])
 
-    for key in node_info['key']:
+    for key in node_info['key_info']:
         key_value = node_data[key] if key in node_data else invalid_value
         key_list.append(str(key_value))
 
@@ -75,13 +75,13 @@ def configure_node_info(node_info):
         pattern = re.compile(key['pattern']) if 'pattern in key else None
         key_info = (key['raw'], pattern)
         key_items.append(key_info)
-    node_info['key'] = key_items
+    node_info['key_info'] = key_items
     
     return node_info
 
 
 def append_keys_to_lookup_attributes(node_info, attr_list):
-    for key in node_info['key']:
+    for key in node_info['key_info']:
         if key not in attr_list:
             attr_list.append(key)
 
