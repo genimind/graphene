@@ -3,6 +3,7 @@
 #
 
 import pandas as pd
+import re
 from .process_utilities import *
 from .process_json import ProcessJsonData
 
@@ -220,16 +221,24 @@ def extract_node_attrs_from_json(jdata, node_info):
         elif type(jdata) is list:
             # print('LIST >> cur_path: {} - type_path: {}'.format(cur_path, type_path))
             if is_list and valid_path_to_pick(cur_path, type_path, is_relative):
+                # TBD: Here we only support one type of item which is __item__ and only 
+                #      one. Note usre if this will cover othe cases
+                attr = attr_list[0]
                 for a in jdata:
                     # print('list_item:', a)
-                    cur_obj = {}
-                    cur_obj['__item__/'] = a # we just use the format specifically as a special case
-                    out.append(cur_obj)
+                    collect = True
+                    if attr[1] != None and not re.match(attr[1], a):
+                        collect = False
+                    if collect:
+                        cur_obj = {}
+                        cur_obj[attr] = a 
+                        out.append(cur_obj)
             else: # just normal processing.
                 for a in jdata:
                     extract_data(a, cur_path, cur_obj, collect_data)
         else:
             # print('cur_path: {} - type_path: {}'.format(cur_path, type_path))
+            # TBD: support patterns for normal attributes
             if cur_obj != None:
                 attr = attr_in_attrlist(cur_path, attr_list, is_relative)
                 if attr != None:
@@ -276,7 +285,8 @@ def create_graph_nodes_from_json(graph, graph_mapper,
             for a in node_info['attributes']:
                 raw_attr = a['raw']
                 raw_attr = correct_path(raw_attr)
-                attr_dict[a['name']] = raw_attr
+                pattern = re.compile(a['pattern') if 'pattern' in a else None
+                attr_dict[a['name']] = (raw_attr, pattern)
 
         node_info['attributes'] = attr_dict
         
@@ -437,10 +447,11 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, add_type_to
             for a in edge_info['attributes']:
                 raw_attr = a['raw']
                 raw_attr = correct_path(raw_attr)
+                pattern = re.compile(a['pattern'] if 'pattern' in a else None
                 if raw_attr.startswith(edge_info['from']['path']):
-                    from_attr_dict[a['name']] = raw_attr
+                    from_attr_dict[a['name']] = (raw_attr, pattern)
                 else:
-                    to_attr_dict[a['name']] = raw_attr
+                    to_attr_dict[a['name']] = (raw_attr, pattern
             
         edge_info['from']['attributes'] = from_attr_dict
         edge_info['to']['attributes'] = to_attr_dict
@@ -547,7 +558,8 @@ def create_graph_clique_from_json(graph, graph_mapper, data_provider, add_type_t
                 for a in node_info['attributes']:
                     raw_attr = a['raw']
                     raw_attr = correct_path(raw_attr)
-                    attr_dict[a['name']] = raw_attr
+                    pattern = re.compile(a['pattern']) if 'pattern' in a else None
+                    attr_dict[a['name']] = (raw_attr, pattern)
             node_info['attributes'] = attr_dict 
             
             # construct attribute mapping between raw_attrib_name -> attrib_name
