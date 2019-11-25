@@ -1,3 +1,4 @@
+import re
 '''
 Utility functions
 '''
@@ -13,8 +14,7 @@ def construct_key(node_info, node_data, add_type_to_key, invalid_value = None):
         key_list.append(node_info['type'])
 
     for key in node_info['key']:
-        key_raw_name = key['raw']
-        key_value = node_data[key_raw_name] if key_raw_name in node_data else invalid_value
+        key_value = node_data[key] if key in node_data else invalid_value
         key_list.append(str(key_value))
 
     return tuple(key_list)
@@ -42,12 +42,15 @@ def attr_in_attrlist(cur_path, attr_list, is_relative = False):
         # check each attribute from the end of the current path
         for attr in attr_list:
             # attr_temp = attr.replace('...','')
-            if cur_path.endswith(attr):
+            # attr is a tuple of (raw, pattern)
+            if cur_path.endswith(attr[0]):
                 ret_attr = attr
                 break
     else:
-        if cur_path in attr_list:
-            ret_attr = cur_path
+        for attr in attr_list:
+            if cur_path == attr[0]:
+                ret_attr= attr
+                break
 
     return ret_attr
 
@@ -66,16 +69,21 @@ def configure_node_info(node_info):
 
     node_info['path'] = correct_path(node_info['path'])
 
+    key_items = []
     for key in node_info['key']:
         key['raw'] = correct_path(key['raw'])
-
+        pattern = re.compile(key['pattern']) if 'pattern in key else None
+        key_info = (key['raw'], pattern)
+        key_items.append(key_info)
+    node_info['key'] = key_items
+    
     return node_info
 
 
 def append_keys_to_lookup_attributes(node_info, attr_list):
     for key in node_info['key']:
-        if key['raw'] not in attr_list:
-            attr_list.append(key['raw'])
+        if key not in attr_list:
+            attr_list.append(key)
 
     return attr_list
         
