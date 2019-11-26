@@ -285,7 +285,7 @@ def create_graph_nodes_from_json(graph, graph_mapper,
             for a in node_info['attributes']:
                 raw_attr = a['raw']
                 raw_attr = correct_path(raw_attr)
-                pattern = re.compile(a['pattern') if 'pattern' in a else None
+                pattern = re.compile(a['pattern']) if 'pattern' in a else None
                 attr_dict[a['name']] = (raw_attr, pattern)
 
         node_info['attr_info'] = attr_dict
@@ -447,11 +447,11 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, add_type_to
             for a in edge_info['attributes']:
                 raw_attr = a['raw']
                 raw_attr = correct_path(raw_attr)
-                pattern = re.compile(a['pattern'] if 'pattern' in a else None
+                pattern = re.compile(a['pattern']) if 'pattern' in a else None
                 if raw_attr.startswith(edge_info['from']['path']):
                     from_attr_dict[a['name']] = (raw_attr, pattern)
                 else:
-                    to_attr_dict[a['name']] = (raw_attr, pattern
+                    to_attr_dict[a['name']] = (raw_attr, pattern)
             
         edge_info['from']['attr_info'] = from_attr_dict
         edge_info['to']['attr_info'] = to_attr_dict
@@ -493,9 +493,9 @@ def create_graph_edges_from_json(graph, graph_mapper, data_provider, add_type_to
 
                     attr = dict()
                     attr['_type_'] = edge['type']
-                    for k,v in edge['from']['attributes'].items():
+                    for k,v in edge['from']['attr_info'].items():
                         attr[k] = felem[v] if v in felem else ''
-                    for k,v in edge['to']['attributes'].items():
+                    for k,v in edge['to']['attr_info'].items():
                         attr[k] = telem[v] if v in telem else ''
 #                     print('adding edge from: {} -> to: {}, attr: {}'.format(from_id, to_id, attr))
                     graph.add_edge(from_id, to_id, **attr)

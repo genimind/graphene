@@ -72,7 +72,7 @@ def configure_node_info(node_info):
     key_items = []
     for key in node_info['key']:
         key['raw'] = correct_path(key['raw'])
-        pattern = re.compile(key['pattern']) if 'pattern in key else None
+        pattern = re.compile(key['pattern']) if 'pattern' in key else None
         key_info = (key['raw'], pattern)
         key_items.append(key_info)
     node_info['key_info'] = key_items
