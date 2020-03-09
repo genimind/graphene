@@ -18,8 +18,8 @@ def find_version(*file_paths):
     raise RuntimeError("Unable to find version string.")
 
 install_requires = [
-    'networkx=2.4.0',
-    'igraph=0.8.0'
+    "networkx>=2.4.0",
+    "python-igraph>=0.8.0"
 ]
 
 setup(
@@ -29,7 +29,7 @@ setup(
     packages=find_packages(),
     install_requires = install_requires,
     license='',
-    long_desription='...TBD...'
+    long_desription='...TBD...',
     python_requires='>=3.7',
     classifiers= [
         'Development Status :: 4 - Beta',

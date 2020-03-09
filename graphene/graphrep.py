@@ -20,11 +20,11 @@ class GraphRep:
 
     class GraphBase(ABC):
         @abstractmethod
-        def add_node(self, id, type, **attr):
+        def add_node(self, id, node_type, **attr):
             pass
 
         @abstractmethod
-        def add_edge(self, id, type, **attr):
+        def add_edge(self, from_id, to_id, edge_type, **attr):
             pass
 
     class GraphNX(GraphBase):
@@ -33,11 +33,13 @@ class GraphRep:
 
         def add_node(self, id, node_type, **attr):
             attr['_type_'] = node_type
-            self._graph.add_node(str(id), **attr)
+            # self._graph.add_node(str(id), **attr)
+            self._graph.add_node(id, **attr)
 
         def add_edge(self, from_id, to_id, edge_type, **attr):
             attr['_type_'] = edge_type
-            self._graph.add_edge(str(from_id), str(to_id), **attr)
+            # self._graph.add_edge(str(from_id), str(to_id), **attr)
+            self._graph.add_edge(from_id, to_id, **attr)
 
     class GraphIG(GraphBase):
         def __init__(self, graph: ig.Graph):
@@ -47,7 +49,7 @@ class GraphRep:
             attr['_type_'] = node_type
             self._graph.add_vertex(name=str(id), **attr)
             
-        def add_edge(self, id, edge_type, **attr):
+        def add_edge(self, from_id, to_id, edge_type, **attr):
             attr['_type_'] = edge_type
             self._graph.add_edge(str(from_id), str(to_id), **attr)
 
@@ -61,11 +63,11 @@ class GraphRep:
         else:
             raise("Unsupported graph type. We only accept NetworkX and iGraph")
 
-    def add_node(self, id, data):
-        return self._graph.add_node(id, data)
+    def add_node(self, id, node_type, **data):
+        return self._graph.add_node(id, node_type, **data)
 
-    def add_edge(self, id, data):
-        return self._graph.add_edge(id, data)
+    def add_edge(self, from_id, to_id, edge_type, **data):
+        return self._graph.add_edge(from_id, to_id, edge_type, **data)
 
     @property
     def graph(self):
