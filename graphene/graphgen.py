@@ -531,13 +531,13 @@ def create_graph_clique_from_json(graph, graph_mapper, data_provider, add_type_t
                 for src_elem in src_node['extracted_elem']:
                     # print('{} - type_found: {} - attr: {}'.format(count, node_type_name, e))
                     src_node_id = construct_key(src_node, src_elem, add_type_to_key)
-
+                    graph.add_node(src_node_id, src_node['type'])
                     for dst_node in node_list:
                         if src_node == dst_node: # we don't allow same type to link (TBD: we need to reconsider this!)
                             continue
                         for dst_elem in dst_node['extracted_elem']:
                             dst_node_id = construct_key(dst_node, dst_elem, add_type_to_key)
-
+                            graph.add_node(dst_node_id, dst_node['type'])
                             # print('adding edge from: {} -> to: {}, attr: {}'.format(src_node_id, dst_node_id, attr))
                             graph.add_edge(src_node_id, dst_node_id, clique_type_name, **attr)
 

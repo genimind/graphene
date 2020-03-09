@@ -47,7 +47,12 @@ class GraphRep:
 
         def add_node(self, id, node_type, **attr):
             attr['_type_'] = node_type
-            self._graph.add_vertex(name=str(id), **attr)
+            # check if we have a node, we'll only have one node with the ID 
+            # which we store as name attrbiute on the igraph node
+            try:
+                n = self._graph.vs.find(str(id))
+            except:
+                self._graph.add_vertex(name=str(id), **attr)
             
         def add_edge(self, from_id, to_id, edge_type, **attr):
             attr['_type_'] = edge_type
