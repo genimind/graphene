@@ -4,9 +4,9 @@ import json
 import networkx as nx
 from graphene import graphgen
 
-node_mapper_filename   = './node_mapper.json'
-clique_mapper_filename = './clique_mapper.json'
-data_filename          = './test_data.txt'
+node_mapper_filename   = './resources/node_mapper.json'
+clique_mapper_filename = './resources/clique_mapper.json'
+data_filename          = './resources/test_data.txt'
 
 class TestMultipleKeys(unittest.TestCase):
 

@@ -4,8 +4,8 @@ import json
 import networkx as nx
 from graphene import graphgen
 
-mapper_filename   = './list_mapper.json'
-data_filename     = './test_list_data.txt'
+mapper_filename   = './resources/list_mapper.json'
+data_filename     = './resources/test_list_data.txt'
 
 class TestLisData(unittest.TestCase):
 

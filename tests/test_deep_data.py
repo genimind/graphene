@@ -4,9 +4,9 @@ import json
 import networkx as nx
 from graphene import graphgen
 
-node_mapper_filename   = './node_deep_mapper.json'
-edge_mapper_filename   = './edge_deep_mapper.json'
-data_filename          = './test_deep_data.txt'
+node_mapper_filename   = './resources/node_deep_mapper.json'
+edge_mapper_filename   = './resources/edge_deep_mapper.json'
+data_filename          = './resources/test_deep_data.txt'
 
 class TestDeepData(unittest.TestCase):
 
