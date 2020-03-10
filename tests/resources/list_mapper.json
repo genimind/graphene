@@ -1,0 +1,48 @@
+{
+"nodes": [
+  {
+    "type": "TypeA",
+    "path": "/path_a",
+    "key" : [
+      {"name": "attr1", "raw": "/path_a/a_attr1"}
+    ],
+  	"attributes": [
+      {"name": "attr1", "raw": "/path_a/a_attr1"},
+      {"name": "attr2", "raw": "/path_a/a_attr2"}
+    ]
+  },
+  {
+    "type": "TypeB",
+    "path": "/path_a/path_b[]",
+    "key" : [
+      {"name": "name", "raw": "__item__"}
+    ],
+    "attributes": [
+      {"name": "name", "raw": "__item__"}
+    ]
+  }
+],
+"edges": [
+  {
+    "type": "Edge_AB",
+    "from": {
+        "type": "TypeA",
+        "path": "/path_a",
+        "key" : [
+            {"name": "attr1", "raw": "/path_a/a_attr1"}
+          ]
+    },
+    "to": {
+        "type": "TypeB",
+        "path": "/path_a/path_b[]",
+        "key" : [
+          {"name": "name", "raw": "__item__"}
+        ]
+    },
+  	"attributes": [
+      {"name": "edge_attr1", "raw": "/path_a/a_attr2"}
+		]
+	}
+]
+}
+
